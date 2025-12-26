@@ -1,5 +1,11 @@
+import { AppProviders } from './App.providers.tsx'
+
 function App() {
-  return <div>test</div>
+  return (
+    <AppProviders>
+      <div>test</div>
+    </AppProviders>
+  )
 }
 
 export default App
