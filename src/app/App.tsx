@@ -1,9 +1,10 @@
 import { AppProviders } from './App.providers.tsx'
+import { AppRouter } from './App.router.tsx'
 
 function App() {
   return (
     <AppProviders>
-      <div>test</div>
+      <AppRouter />
     </AppProviders>
   )
 }
