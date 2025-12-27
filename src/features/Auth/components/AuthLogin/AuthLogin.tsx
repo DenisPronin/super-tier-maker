@@ -36,7 +36,7 @@ export function AuthLogin() {
   const handleSubmit = async (values: AuthEmailLoginRequest) => {
     try {
       await login(values)
-      navigate('/app/game')
+      navigate('/app/dashboard')
     } catch {
       return
     }

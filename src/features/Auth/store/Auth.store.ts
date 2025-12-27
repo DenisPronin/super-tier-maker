@@ -15,6 +15,7 @@ type AuthState = {
   session: Session | null
   loginError: string | null
   isLoginLoading: boolean
+  isInitialized: boolean
 
   login: (values: AuthEmailLoginRequest) => Promise<void>
   signUp: (values: AuthRegisterRequest) => Promise<void>
@@ -27,6 +28,7 @@ export const useAuthStore = createStore<AuthState>()(
     session: null,
     loginError: null,
     isLoginLoading: false,
+    isInitialized: false,
 
     login: async (request: AuthEmailLoginRequest) => {
       set({ isLoginLoading: true, loginError: null })
@@ -91,6 +93,7 @@ supabase.auth.getSession().then(({ data: { session } }) => {
   useAuthStore.setState({
     session,
     user: session?.user ?? null,
+    isInitialized: true,
   })
 })
 

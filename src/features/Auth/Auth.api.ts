@@ -39,7 +39,7 @@ export async function apiAuthSignInWithGoogle(): Promise<void> {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/app/game`,
+      redirectTo: `${window.location.origin}/app/dashboard`,
     },
   })
 

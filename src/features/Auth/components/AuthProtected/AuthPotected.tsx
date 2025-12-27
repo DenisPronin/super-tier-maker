@@ -6,8 +6,9 @@ import { selectAuthIsLoggedIn, useAuthStore } from '../../store/Auth.store'
 export function AuthProtected({ children }: { children: ReactNode }) {
   const isLoggedIn = useAuthStore(selectAuthIsLoggedIn)
   const isLoginLoading = useAuthStore((state) => state.isLoginLoading)
+  const isInitialized = useAuthStore((state) => state.isInitialized)
 
-  if (isLoginLoading) {
+  if (!isInitialized || isLoginLoading) {
     return (
       <Center h="100vh">
         <Loader size="lg" />
