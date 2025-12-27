@@ -1,29 +1,74 @@
-import { api } from '@/features/Network'
+import { supabase } from '@/features/DbClient'
 import { createStore, resetAllStores } from '@/features/Store'
-import { apiAuthLogin } from '../Auth.api'
+import type { Session, User } from '@supabase/supabase-js'
+import {
+  apiAuthSignIn,
+  apiAuthSignInWithGoogle,
+  apiAuthSignOut,
+  apiAuthSignUp,
+} from '../Auth.api'
 import { FEATURE_NAME } from '../Auth.model'
-import { type AuthLoginRequest } from '../Auth.types'
+import type { AuthEmailLoginRequest, AuthRegisterRequest } from '../Auth.types'
 
 type AuthState = {
-  token: string | null
+  user: User | null
+  session: Session | null
   loginError: string | null
   isLoginLoading: boolean
 
-  login: (values: AuthLoginRequest) => Promise<void>
+  login: (values: AuthEmailLoginRequest) => Promise<void>
+  signUp: (values: AuthRegisterRequest) => Promise<void>
+  signInWithGoogle: () => Promise<void>
 }
 
 export const useAuthStore = createStore<AuthState>()(
   (set) => ({
-    token: null,
+    user: null,
+    session: null,
     loginError: null,
     isLoginLoading: false,
 
-    login: async (request: AuthLoginRequest) => {
-      set({ isLoginLoading: true })
+    login: async (request: AuthEmailLoginRequest) => {
+      set({ isLoginLoading: true, loginError: null })
       try {
-        const { token } = await apiAuthLogin(request)
-        set({ token, loginError: null })
-        api.setToken(token)
+        const response = await apiAuthSignIn(request)
+        if (response.error) {
+          throw response.error
+        }
+        // Auth state will be updated via onAuthStateChange listener
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          set({ loginError: err.message })
+        }
+        throw err
+      } finally {
+        set({ isLoginLoading: false })
+      }
+    },
+
+    signUp: async (request: AuthRegisterRequest) => {
+      set({ isLoginLoading: true, loginError: null })
+      try {
+        const response = await apiAuthSignUp(request)
+        if (response.error) {
+          throw response.error
+        }
+        // Auth state will be updated via onAuthStateChange listener
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          set({ loginError: err.message })
+        }
+        throw err
+      } finally {
+        set({ isLoginLoading: false })
+      }
+    },
+
+    signInWithGoogle: async () => {
+      set({ isLoginLoading: true, loginError: null })
+      try {
+        await apiAuthSignInWithGoogle()
+        // OAuth redirects, no need to update state here
       } catch (err: unknown) {
         if (err instanceof Error) {
           set({ loginError: err.message })
@@ -37,25 +82,29 @@ export const useAuthStore = createStore<AuthState>()(
   {
     name: FEATURE_NAME,
     resettable: true,
-    persistOptions: {
-      name: FEATURE_NAME,
-      partialize: (state) => ({ token: state.token }),
-      onRehydrateStorage: () => (state, error) => {
-        if (error) return
-
-        if (state?.token) {
-          api.setToken(state.token)
-        }
-      },
-    },
+    // No persistOptions - Supabase handles session persistence automatically
   }
 )
 
-export const logout = () => {
+// Initialize auth state from Supabase
+supabase.auth.getSession().then(({ data: { session } }) => {
+  useAuthStore.setState({
+    session,
+    user: session?.user ?? null,
+  })
+})
+
+// Listen to auth state changes
+supabase.auth.onAuthStateChange((_event, session) => {
+  useAuthStore.setState({
+    session,
+    user: session?.user ?? null,
+  })
+})
+
+export const logout = async () => {
+  await apiAuthSignOut()
   resetAllStores()
-  api.setToken(null)
 }
 
-api.setLogoutCallback(logout)
-
-export const selectAuthIsLoggedIn = (state: AuthState) => !!state.token
+export const selectAuthIsLoggedIn = (state: AuthState) => !!state.user
