@@ -1,4 +1,4 @@
-import { supabase } from '@/features/DbClient'
+import { supabase } from '@/app/imports/App.services'
 import { createStore, resetAllStores } from '@/features/Store'
 import type { Session, User } from '@supabase/supabase-js'
 import {

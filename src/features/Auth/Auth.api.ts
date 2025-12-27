@@ -1,4 +1,4 @@
-import { supabase } from '@/features/DbClient'
+import { supabase } from '@/app/imports/App.services'
 import type {
   AuthEmailLoginRequest,
   AuthRegisterRequest,
