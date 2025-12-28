@@ -1,7 +1,15 @@
 import { useAuthStore } from '@/app/imports/App.store'
-import { Button, Checkbox, Modal, Stack, Text, TextInput, Textarea } from '@mantine/core'
+import {
+  Button,
+  Checkbox,
+  Modal,
+  Stack,
+  Text,
+  TextInput,
+  Textarea,
+} from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { validateTitle } from '../../Tierlist.model'
 import type { CreateTierListRequest } from '../../Tierlist.types'
@@ -10,6 +18,7 @@ import {
   selectNewTierlist,
   useTierlistStore,
 } from '../../store/Tierlist.store'
+import { TierlistPreviewUpload } from '../TierlistPreviewUpload/TierlistPreviewUpload'
 
 export function TierlistCreateModal() {
   const navigate = useNavigate()
@@ -17,8 +26,10 @@ export function TierlistCreateModal() {
   const isOpen = useTierlistStore(selectIsCreateModalOpen)
   const newTierlist = useTierlistStore(selectNewTierlist)
   const closeModal = useTierlistStore((state) => state.closeCreateModal)
-  const createAction = useTierlistStore((state) => state.createTierListAction)
+  const createAction = useTierlistStore((state) => state.createTierList)
   const resetCreateState = useTierlistStore((state) => state.resetCreateState)
+
+  const [previewFile, setPreviewFile] = useState<File | null>(null)
 
   const form = useForm<CreateTierListRequest>({
     initialValues: {
@@ -35,7 +46,11 @@ export function TierlistCreateModal() {
     if (!user) return
 
     try {
-      await createAction({ userId: user.id, request: values })
+      await createAction({
+        userId: user.id,
+        request: values,
+        previewFile: previewFile || undefined,
+      })
     } catch {
       return
     }
@@ -44,6 +59,7 @@ export function TierlistCreateModal() {
   const handleClose = () => {
     closeModal()
     form.reset()
+    setPreviewFile(null)
     resetCreateState()
   }
 
@@ -75,6 +91,14 @@ export function TierlistCreateModal() {
             placeholder="Enter description (optional)"
             minRows={3}
             {...form.getInputProps('description')}
+          />
+
+          <TierlistPreviewUpload
+            tierlistId="temp"
+            currentPreviewUrl={null}
+            onUpload={setPreviewFile}
+            isLoading={false}
+            error={null}
           />
 
           <Checkbox

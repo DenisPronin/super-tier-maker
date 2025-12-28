@@ -1,5 +1,6 @@
 import { LayoutMain } from '@/app/imports/App.components'
 import { type IRouter } from '@/types'
+import { EditTierlistPage } from './components/EditTierlistPage/EditTierlistPage'
 
 export const tierlistRouter: IRouter = {
   layout: {
@@ -9,7 +10,7 @@ export const tierlistRouter: IRouter = {
   routes: [
     {
       path: 'tierlist/:id/edit',
-      element: () => <div>Editor Page (TODO)</div>,
+      element: EditTierlistPage,
       private: true,
     },
     {
