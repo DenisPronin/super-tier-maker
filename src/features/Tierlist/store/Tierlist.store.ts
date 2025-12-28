@@ -6,6 +6,7 @@ import {
 import type { StateLoadableSlice } from '@/types'
 import {
   apiCreateTierList,
+  apiDeletePreview,
   apiDeleteTierList,
   apiFetchTierLists,
   apiUpdateTierListPreview,
@@ -80,6 +81,12 @@ export const useTierlistStore = createStore<TierlistState>()(
     }),
 
     deleteTierlist: async (tierlistId: string) => {
+      try {
+        await apiDeletePreview(tierlistId)
+      } catch {
+        // Preview might not exist, continue with deletion
+      }
+
       await apiDeleteTierList(tierlistId)
 
       const currentLists = get().tierlists.data || []

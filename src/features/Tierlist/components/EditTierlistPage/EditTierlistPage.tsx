@@ -1,7 +1,7 @@
 import { Container, Paper, Stack, Title } from '@mantine/core'
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { getPreviewUrl } from '../../Tierlist.storage'
+import { getPreviewUrl } from '../../Tierlist.model'
 import {
   selectPreviewUpload,
   selectTierlists,

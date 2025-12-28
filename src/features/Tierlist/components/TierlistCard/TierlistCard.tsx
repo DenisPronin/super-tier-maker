@@ -11,7 +11,7 @@ import {
 } from '@mantine/core'
 import { IconEdit, IconPlayerPlay } from '@tabler/icons-react'
 import { useNavigate } from 'react-router-dom'
-import { getPreviewUrl } from '../../Tierlist.storage'
+import { getPreviewUrl } from '../../Tierlist.model'
 import type { TierList } from '../../Tierlist.types'
 import { TierlistDeleteControl } from '../TierlistDeleteControl/TierlistDeleteControl'
 
