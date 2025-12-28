@@ -3,6 +3,7 @@ import { DashboardFeature } from '@/features/Dashboard'
 import { DbClientFeature } from '@/features/DbClient'
 import { LayoutFeature } from '@/features/Layout'
 import { ThemeFeature } from '@/features/Theme'
+import { TierlistFeature } from '@/features/Tierlist'
 import type { IFeature } from '@/types'
 
 export const appFeatures: IFeature[] = [
@@ -10,5 +11,6 @@ export const appFeatures: IFeature[] = [
   ThemeFeature,
   LayoutFeature,
   AuthFeature,
+  TierlistFeature,
   DashboardFeature,
 ]
