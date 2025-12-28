@@ -1,4 +1,3 @@
-import { type MouseEvent } from 'react'
 import {
   ActionIcon,
   Card,
@@ -10,6 +9,7 @@ import {
   useMantineTheme,
 } from '@mantine/core'
 import { IconEdit, IconPlayerPlay } from '@tabler/icons-react'
+import { type MouseEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getPreviewUrl } from '../../Tierlist.model'
 import type { TierList } from '../../Tierlist.types'
@@ -87,11 +87,9 @@ export function TierlistCard({ tierlist }: TierlistCardProps) {
           </Group>
         </Group>
 
-        {tierlist.meta.description && (
-          <Text size="sm" c="dimmed" lineClamp={2}>
-            {tierlist.meta.description}
-          </Text>
-        )}
+        <Text size="sm" c="dimmed" lineClamp={2}>
+          {tierlist.meta.description || '\u00A0'}
+        </Text>
       </Stack>
     </Card>
   )

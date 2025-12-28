@@ -33,18 +33,22 @@ export function TierlistList() {
         </Group>
       )}
 
-      {!tierlists.isLoading && (!tierlists.data || tierlists.data.length === 0) && (
-        <Stack align="center" py="xl">
-          <Text size="lg" c="dimmed">
-            No tier lists yet. Create your first one!
-          </Text>
-        </Stack>
-      )}
+      {!tierlists.isLoading &&
+        (!tierlists.data || tierlists.data.length === 0) && (
+          <Stack align="center" py="xl">
+            <Text size="lg" c="dimmed">
+              No tier lists yet. Create your first one!
+            </Text>
+          </Stack>
+        )}
 
       {!tierlists.isLoading && tierlists.data && tierlists.data.length > 0 && (
         <Grid>
           {tierlists.data.map((tierlist) => (
-            <Grid.Col key={tierlist.id} span={{ base: 12, sm: 6, md: 4 }}>
+            <Grid.Col
+              key={tierlist.id}
+              span={{ base: 12, sm: 6, md: 4, lg: 3 }}
+            >
               <TierlistCard tierlist={tierlist} />
             </Grid.Col>
           ))}
