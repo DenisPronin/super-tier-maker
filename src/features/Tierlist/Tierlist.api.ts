@@ -1,4 +1,5 @@
 import { supabase } from '@/app/imports/App.services'
+import { apiUploadPreview } from './Tierlist.storage'
 import type { CreateTierListRequest, TierList } from './Tierlist.types'
 
 export async function apiFetchTierLists(userId: string): Promise<TierList[]> {
@@ -40,4 +41,25 @@ export async function apiDeleteTierList(tierlistId: string): Promise<void> {
     .eq('id', tierlistId)
 
   if (error) throw new Error(error.message)
+}
+
+export async function apiUpdateTierListPreview(
+  tierlistId: string,
+  file: File
+): Promise<TierList> {
+  const { path, updatedAt } = await apiUploadPreview(tierlistId, file)
+
+  const { data, error } = await supabase
+    .from('tierlists')
+    .update({
+      preview_path: path,
+      preview_updated_at: updatedAt,
+    })
+    .eq('id', tierlistId)
+    .select()
+    .single()
+
+  if (error) throw new Error(error.message)
+
+  return data as TierList
 }
