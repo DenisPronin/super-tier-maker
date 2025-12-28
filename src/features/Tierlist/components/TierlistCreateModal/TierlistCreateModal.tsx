@@ -1,24 +1,14 @@
 import { useAuthStore } from '@/app/imports/App.store'
-import {
-  Button,
-  Checkbox,
-  Modal,
-  Stack,
-  Text,
-  TextInput,
-  Textarea,
-} from '@mantine/core'
+import { Button, Checkbox, Modal } from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { validateTitle } from '../../Tierlist.model'
-import type { CreateTierListRequest } from '../../Tierlist.types'
 import {
   selectIsCreateModalOpen,
   selectNewTierlist,
   useTierlistStore,
 } from '../../store/Tierlist.store'
-import { TierlistPreviewUpload } from '../TierlistPreviewUpload/TierlistPreviewUpload'
+import { TierlistMetaForm } from '../TierlistMetaForm/TierlistMetaForm'
 
 export function TierlistCreateModal() {
   const navigate = useNavigate()
@@ -29,26 +19,26 @@ export function TierlistCreateModal() {
   const createAction = useTierlistStore((state) => state.createTierList)
   const resetCreateState = useTierlistStore((state) => state.resetCreateState)
 
-  const [previewFile, setPreviewFile] = useState<File | null>(null)
-
-  const form = useForm<CreateTierListRequest>({
+  const publicForm = useForm({
     initialValues: {
-      title: '',
-      description: '',
       is_public: true,
-    },
-    validate: {
-      title: validateTitle,
     },
   })
 
-  const handleSubmit = async (values: CreateTierListRequest) => {
+  const handleSubmit = async (
+    values: { title: string; description: string },
+    previewFile: File | null
+  ) => {
     if (!user) return
 
     try {
       await createAction({
         userId: user.id,
-        request: values,
+        request: {
+          title: values.title,
+          description: values.description,
+          is_public: publicForm.values.is_public,
+        },
         previewFile: previewFile || undefined,
       })
     } catch {
@@ -56,19 +46,18 @@ export function TierlistCreateModal() {
     }
   }
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     closeModal()
-    form.reset()
-    setPreviewFile(null)
+    publicForm.reset()
     resetCreateState()
-  }
+  }, [closeModal, publicForm, resetCreateState])
 
   useEffect(() => {
     if (newTierlist.isSuccess && newTierlist.data) {
       handleClose()
       navigate(`/app/tierlist/${newTierlist.data.id}/edit`)
     }
-  }, [newTierlist.isSuccess, newTierlist.data, navigate])
+  }, [newTierlist.isSuccess, newTierlist.data, navigate, handleClose])
 
   return (
     <Modal
@@ -77,46 +66,20 @@ export function TierlistCreateModal() {
       title="Create New Tier List"
       size="md"
     >
-      <form onSubmit={form.onSubmit(handleSubmit)}>
-        <Stack>
-          <TextInput
-            label="Title"
-            placeholder="Enter tier list title"
-            required
-            {...form.getInputProps('title')}
-          />
+      <TierlistMetaForm
+        onSubmit={handleSubmit}
+        isLoading={newTierlist.isLoading}
+        error={newTierlist.error}
+      >
+        <Checkbox
+          label="Make this tier list public"
+          {...publicForm.getInputProps('is_public', { type: 'checkbox' })}
+        />
 
-          <Textarea
-            label="Description"
-            placeholder="Enter description (optional)"
-            minRows={3}
-            {...form.getInputProps('description')}
-          />
-
-          <TierlistPreviewUpload
-            tierlistId="temp"
-            currentPreviewUrl={null}
-            onUpload={setPreviewFile}
-            isLoading={false}
-            error={null}
-          />
-
-          <Checkbox
-            label="Make this tier list public"
-            {...form.getInputProps('is_public', { type: 'checkbox' })}
-          />
-
-          {newTierlist.error && (
-            <Text size="sm" c="red">
-              {newTierlist.error}
-            </Text>
-          )}
-
-          <Button type="submit" loading={newTierlist.isLoading} fullWidth>
-            Create Tier List
-          </Button>
-        </Stack>
-      </form>
+        <Button type="submit" loading={newTierlist.isLoading} fullWidth>
+          Create Tier List
+        </Button>
+      </TierlistMetaForm>
     </Modal>
   )
 }

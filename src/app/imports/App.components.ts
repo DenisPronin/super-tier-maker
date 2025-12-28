@@ -8,3 +8,4 @@ export { LayoutMain } from '@/features/Layout/components/LayoutMain/LayoutMain'
 
 // Tierlist
 export { TierlistList } from '@/features/Tierlist/components/TierlistList/TierlistList'
+export { TierlistMetaForm } from '@/features/Tierlist/components/TierlistMetaForm/TierlistMetaForm'

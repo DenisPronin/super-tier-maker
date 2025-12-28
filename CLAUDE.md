@@ -21,9 +21,13 @@ Language:
 Imports:
 - Import only specific items from packages.
 - DO NOT use namespace imports unless necessary.
+- DO NOT use React.* notation (React.ReactNode, React.MouseEvent, etc.)
+- ALWAYS import specific types from 'react' directly.
 - Examples:
   - ❌ `onClick?: (e: React.MouseEvent) => void` (React not imported)
+  - ❌ `children?: React.ReactNode` (namespace import)
   - ✅ `import { type MouseEvent } from 'react'` then `onClick?: (e: MouseEvent) => void`
+  - ✅ `import { type ReactNode } from 'react'` then `children?: ReactNode`
 
 ---
 ### Execution plan rules:
