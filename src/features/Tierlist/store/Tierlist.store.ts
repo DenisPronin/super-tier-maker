@@ -4,7 +4,7 @@ import {
   createStore,
 } from '@/features/Store'
 import type { StateLoadableSlice } from '@/types'
-import { apiCreateTierList, apiFetchTierLists } from '../Tierlist.api'
+import { apiCreateTierList, apiDeleteTierList, apiFetchTierLists } from '../Tierlist.api'
 import { FEATURE_NAME } from '../Tierlist.model'
 import type { CreateTierListRequest, TierList } from '../Tierlist.types'
 
@@ -18,6 +18,7 @@ type TierlistState = {
     userId: string
     request: CreateTierListRequest
   }) => Promise<void>
+  deleteTierlist: (tierlistId: string) => Promise<void>
   openCreateModal: () => void
   closeCreateModal: () => void
   resetCreateState: () => void
@@ -60,6 +61,18 @@ export const useTierlistStore = createStore<TierlistState>()(
         return newTierlist
       },
     }),
+
+    deleteTierlist: async (tierlistId: string) => {
+      await apiDeleteTierList(tierlistId)
+
+      const currentLists = get().tierlists.data || []
+      set({
+        tierlists: {
+          ...get().tierlists,
+          data: currentLists.filter((tierlist) => tierlist.id !== tierlistId),
+        },
+      })
+    },
 
     openCreateModal: () => set({ isCreateModalOpen: true }),
     closeCreateModal: () => set({ isCreateModalOpen: false }),

@@ -12,5 +12,10 @@ export const tierlistRouter: IRouter = {
       element: () => <div>Editor Page (TODO)</div>,
       private: true,
     },
+    {
+      path: 'tierlist/:id/play',
+      element: () => <div>Play Mode (TODO)</div>,
+      private: true,
+    },
   ],
 }

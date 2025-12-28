@@ -32,3 +32,12 @@ export async function apiCreateTierList(
 
   return data as TierList
 }
+
+export async function apiDeleteTierList(tierlistId: string): Promise<void> {
+  const { error } = await supabase
+    .from('tierlists')
+    .delete()
+    .eq('id', tierlistId)
+
+  if (error) throw new Error(error.message)
+}
