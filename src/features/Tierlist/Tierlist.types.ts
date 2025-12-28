@@ -6,6 +6,8 @@ export interface TierList {
   is_public: boolean
   created_at: string
   updated_at: string
+  preview_path: string | null
+  preview_updated_at: string | null
 }
 
 export interface TierListMeta {

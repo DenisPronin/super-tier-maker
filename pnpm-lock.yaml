@@ -20,6 +20,9 @@ importers:
       '@mantine/hooks':
         specifier: ^8.3.2
         version: 8.3.10(react@19.2.3)
+      '@mantine/modals':
+        specifier: ^8.3.10
+        version: 8.3.10(@mantine/core@8.3.10(@mantine/hooks@8.3.10(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@mantine/hooks@8.3.10(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@supabase/supabase-js':
         specifier: ^2.89.0
         version: 2.89.0
@@ -472,6 +475,14 @@ packages:
     resolution: {integrity: sha512-bv+yYHl+keTIvakiDzVJMIjW+o8/Px0G3EdpCMFG+U2ux6SwQqluqoq+/kqrTtT6RaLvQ0fMxjpIULF2cu/xAg==}
     peerDependencies:
       react: ^18.x || ^19.x
+
+  '@mantine/modals@8.3.10':
+    resolution: {integrity: sha512-XopCrP8dindhzSDazU47BgU8TVsiOyEG0u1UMJJ4u8TdvBctP7QVeJmGKj+B4MRHk2cHrjIF38dEGJhDgTITEg==}
+    peerDependencies:
+      '@mantine/core': 8.3.10
+      '@mantine/hooks': 8.3.10
+      react: ^18.x || ^19.x
+      react-dom: ^18.x || ^19.x
 
   '@rolldown/pluginutils@1.0.0-beta.53':
     resolution: {integrity: sha512-vENRlFU4YbrwVqNDZ7fLvy+JR1CRkyr01jhSiDpE1u6py3OMzQfztQU2jxykW3ALNxO4kSlqIDeYyD0Y9RcQeQ==}
@@ -1859,6 +1870,13 @@ snapshots:
   '@mantine/hooks@8.3.10(react@19.2.3)':
     dependencies:
       react: 19.2.3
+
+  '@mantine/modals@8.3.10(@mantine/core@8.3.10(@mantine/hooks@8.3.10(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(@mantine/hooks@8.3.10(react@19.2.3))(react-dom@19.2.3(react@19.2.3))(react@19.2.3)':
+    dependencies:
+      '@mantine/core': 8.3.10(@mantine/hooks@8.3.10(react@19.2.3))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      '@mantine/hooks': 8.3.10(react@19.2.3)
+      react: 19.2.3
+      react-dom: 19.2.3(react@19.2.3)
 
   '@rolldown/pluginutils@1.0.0-beta.53': {}
 
