@@ -1,15 +1,16 @@
 import { LayoutMain } from '@/app/imports/App.components'
 import { type IRouter } from '@/types'
+import { TierlistEditorPage } from './components/TierlistEditorPage/TierlistEditorPage'
 
-export const tierlistRouter: IRouter = {
+export const tierlistEditorRouter: IRouter = {
   layout: {
     path: 'app',
     element: LayoutMain,
   },
   routes: [
     {
-      path: 'tierlist/:id/play',
-      element: () => <div>Play Mode (TODO)</div>,
+      path: 'tierlist/:id/edit',
+      element: TierlistEditorPage,
       private: true,
     },
   ],

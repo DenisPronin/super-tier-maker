@@ -16,8 +16,6 @@ import type { CreateTierListRequest, TierList } from '../Tierlist.types'
 
 type TierlistState = {
   tierlists: StateLoadableSlice<TierList[]>
-  newTierlist: StateLoadableSlice<TierList>
-  previewUpload: StateLoadableSlice<TierList>
   isCreateModalOpen: boolean
 
   fetchTierLists: (userId: string) => Promise<void>
@@ -25,20 +23,15 @@ type TierlistState = {
     userId: string
     request: CreateTierListRequest
     previewFile?: File
-  }) => Promise<void>
+  }) => Promise<TierList>
   deleteTierlist: (tierlistId: string) => Promise<void>
-  uploadPreview: (request: { tierlistId: string; file: File }) => Promise<void>
   openCreateModal: () => void
   closeCreateModal: () => void
-  resetCreateState: () => void
-  resetPreviewUploadState: () => void
 }
 
 export const useTierlistStore = createStore<TierlistState>()(
   (set, get) => ({
     tierlists: createLoadableData<TierList[]>(),
-    newTierlist: createLoadableData<TierList>(),
-    previewUpload: createLoadableData<TierList>(),
     isCreateModalOpen: false,
 
     fetchTierLists: createAsyncAction<
@@ -46,39 +39,39 @@ export const useTierlistStore = createStore<TierlistState>()(
       TierList[],
       string,
       'tierlists'
-    >({ getState: get, setState: set } as any, 'tierlists', {
+    >({ getState: get, setState: set }, 'tierlists', {
       fetchFunction: async (userId: string) => {
         return await apiFetchTierLists(userId)
       },
     }),
 
-    createTierList: createAsyncAction<
-      TierlistState,
-      TierList,
-      { userId: string; request: CreateTierListRequest; previewFile?: File },
-      'newTierlist'
-    >({ getState: get, setState: set } as any, 'newTierlist', {
-      fetchFunction: async ({ userId, request, previewFile }) => {
-        let newTierlist = await apiCreateTierList(userId, request)
+    createTierList: async (request: {
+      userId: string
+      request: CreateTierListRequest
+      previewFile?: File
+    }) => {
+      let newTierlist = await apiCreateTierList(
+        request.userId,
+        request.request
+      )
 
-        if (previewFile) {
-          newTierlist = await apiUpdateTierListPreview(
-            newTierlist.id,
-            previewFile
-          )
-        }
+      if (request.previewFile) {
+        newTierlist = await apiUpdateTierListPreview(
+          newTierlist.id,
+          request.previewFile
+        )
+      }
 
-        const currentLists = get().tierlists.data || []
-        set({
-          tierlists: {
-            ...get().tierlists,
-            data: [newTierlist, ...currentLists],
-          },
-        })
+      const currentLists = get().tierlists.data || []
+      set({
+        tierlists: {
+          ...get().tierlists,
+          data: [newTierlist, ...currentLists],
+        },
+      })
 
-        return newTierlist
-      },
-    }),
+      return newTierlist
+    },
 
     deleteTierlist: async (tierlistId: string) => {
       try {
@@ -98,33 +91,8 @@ export const useTierlistStore = createStore<TierlistState>()(
       })
     },
 
-    uploadPreview: createAsyncAction<
-      TierlistState,
-      TierList,
-      { tierlistId: string; file: File },
-      'previewUpload'
-    >({ getState: get, setState: set } as any, 'previewUpload', {
-      fetchFunction: async ({ tierlistId, file }) => {
-        const updatedTierlist = await apiUpdateTierListPreview(tierlistId, file)
-
-        const currentLists = get().tierlists.data || []
-        set({
-          tierlists: {
-            ...get().tierlists,
-            data: currentLists.map((tierlist) =>
-              tierlist.id === tierlistId ? updatedTierlist : tierlist
-            ),
-          },
-        })
-
-        return updatedTierlist
-      },
-    }),
-
     openCreateModal: () => set({ isCreateModalOpen: true }),
     closeCreateModal: () => set({ isCreateModalOpen: false }),
-    resetCreateState: () => set({ newTierlist: createLoadableData() }),
-    resetPreviewUploadState: () => set({ previewUpload: createLoadableData() }),
   }),
   { name: FEATURE_NAME, resettable: true }
 )
@@ -132,5 +100,3 @@ export const useTierlistStore = createStore<TierlistState>()(
 export const selectTierlists = (state: TierlistState) => state.tierlists
 export const selectIsCreateModalOpen = (state: TierlistState) =>
   state.isCreateModalOpen
-export const selectNewTierlist = (state: TierlistState) => state.newTierlist
-export const selectPreviewUpload = (state: TierlistState) => state.previewUpload
