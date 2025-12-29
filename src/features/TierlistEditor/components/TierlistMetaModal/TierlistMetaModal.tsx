@@ -1,7 +1,7 @@
 import { TierlistMetaForm } from '@/app/imports/App.components'
 import { apiUpdateTierListPreview } from '@/features/Tierlist/Tierlist.api'
 import { Button, Modal, Stack } from '@mantine/core'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useState } from 'react'
 import {
   selectIsMetaModalOpen,
   selectTierlist,
@@ -26,7 +26,14 @@ export function TierlistMetaModal() {
   const tierlist = useTierlistEditorStore(selectTierlist)
   const closeModal = useTierlistEditorStore((state) => state.closeMetaModal)
   const updateMeta = useTierlistEditorStore((state) => state.updateMeta)
-  const metaUpdate = useTierlistEditorStore((state) => state.metaUpdate)
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleClose = useCallback(() => {
+    closeModal()
+    setError(null)
+  }, [closeModal])
 
   const handleSubmit = useCallback(
     async (
@@ -34,6 +41,9 @@ export function TierlistMetaModal() {
       previewFile: File | null
     ) => {
       if (!tierlist) return
+
+      setIsLoading(true)
+      setError(null)
 
       try {
         await updateMeta({
@@ -44,22 +54,16 @@ export function TierlistMetaModal() {
         if (previewFile) {
           await apiUpdateTierListPreview(tierlist.id, previewFile)
         }
-      } catch {
-        return
+
+        handleClose()
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Unknown error')
+      } finally {
+        setIsLoading(false)
       }
     },
-    [tierlist, updateMeta]
+    [tierlist, updateMeta, handleClose]
   )
-
-  const handleClose = useCallback(() => {
-    closeModal()
-  }, [closeModal])
-
-  useEffect(() => {
-    if (metaUpdate.isSuccess) {
-      handleClose()
-    }
-  }, [metaUpdate.isSuccess, handleClose])
 
   if (!tierlist) return null
 
@@ -83,11 +87,11 @@ export function TierlistMetaModal() {
         currentPreviewUrl={previewUrl}
         tierlistId={tierlist.id}
         onSubmit={handleSubmit}
-        isLoading={metaUpdate.isLoading}
-        error={metaUpdate.error}
+        isLoading={isLoading}
+        error={error}
       >
         <Stack gap="xs">
-          <Button type="submit" loading={metaUpdate.isLoading} fullWidth>
+          <Button type="submit" loading={isLoading} fullWidth>
             Save
           </Button>
           <Button variant="subtle" onClick={handleClose} fullWidth>
