@@ -1,6 +1,6 @@
 import { ActionIcon, Card, Image, Stack, Text } from '@mantine/core'
 import { IconPlayerPlay } from '@tabler/icons-react'
-import { useState } from 'react'
+import { type MouseEvent, useState } from 'react'
 import type { Candidate } from '../../../TierlistEditor.types'
 
 interface CandidateCardProps {
@@ -26,7 +26,7 @@ export function CandidateCard({
     onClick?.(candidate)
   }
 
-  const handlePlayClick = (event: React.MouseEvent) => {
+  const handlePlayClick = (event: MouseEvent) => {
     event.stopPropagation()
     if (onPlayClick) {
       onPlayClick(candidate)
