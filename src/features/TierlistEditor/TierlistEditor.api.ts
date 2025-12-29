@@ -68,6 +68,7 @@ export async function apiCreateCategory(
       tierlist_id: tierlistId,
       title: data.title,
       color: data.color || null,
+      sort_order: data.sort_order,
     })
     .select()
     .single()

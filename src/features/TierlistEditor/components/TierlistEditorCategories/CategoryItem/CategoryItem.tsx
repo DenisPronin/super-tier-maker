@@ -1,7 +1,15 @@
 import { ActionIcon, Box, Flex, Menu, Paper } from '@mantine/core'
-import { IconDots, IconEdit } from '@tabler/icons-react'
-import { useTierlistEditorStore } from '../../../store/TierlistEditor.store'
-import type { Category } from '../../../TierlistEditor.types'
+import { IconArrowDown, IconArrowUp, IconDots, IconEdit } from '@tabler/icons-react'
+import { useState } from 'react'
+import {
+  selectCategories,
+  useTierlistEditorStore,
+} from '../../../store/TierlistEditor.store'
+import {
+  CATEGORY_MOVE_DIRECTION,
+  type Category,
+  type CategoryMoveDirection,
+} from '../../../TierlistEditor.types'
 import { CategoryDeleteControl } from '../CategoryDeleteControl/CategoryDeleteControl'
 
 interface CategoryItemProps {
@@ -9,12 +17,30 @@ interface CategoryItemProps {
 }
 
 export function CategoryItem({ category }: CategoryItemProps) {
+  const categories = useTierlistEditorStore(selectCategories)
   const openCategoryModal = useTierlistEditorStore(
     (state) => state.openCategoryModal
   )
+  const moveCategory = useTierlistEditorStore((state) => state.moveCategory)
+
+  const [isMoving, setIsMoving] = useState(false)
+
+  const categoriesData = categories.data || []
+  const currentIndex = categoriesData.findIndex((cat) => cat.id === category.id)
+  const isFirst = currentIndex === 0
+  const isLast = currentIndex === categoriesData.length - 1
 
   const handleEdit = () => {
     openCategoryModal(category.id)
+  }
+
+  const handleMove = (direction: CategoryMoveDirection) => async () => {
+    setIsMoving(true)
+    try {
+      await moveCategory(category.id, direction)
+    } finally {
+      setIsMoving(false)
+    }
   }
 
   const candidatesInCategory = []
@@ -63,6 +89,23 @@ export function CategoryItem({ category }: CategoryItemProps) {
               </Menu.Target>
 
               <Menu.Dropdown>
+                <Menu.Item
+                  leftSection={<IconArrowUp size={16} />}
+                  onClick={handleMove(CATEGORY_MOVE_DIRECTION.UP)}
+                  disabled={isFirst || isMoving}
+                >
+                  Move Up
+                </Menu.Item>
+                <Menu.Item
+                  leftSection={<IconArrowDown size={16} />}
+                  onClick={handleMove(CATEGORY_MOVE_DIRECTION.DOWN)}
+                  disabled={isLast || isMoving}
+                >
+                  Move Down
+                </Menu.Item>
+
+                <Menu.Divider />
+
                 <Menu.Item
                   leftSection={<IconEdit size={16} />}
                   onClick={handleEdit}
