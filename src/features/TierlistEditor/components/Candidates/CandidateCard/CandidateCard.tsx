@@ -21,20 +21,9 @@ export function CandidateCard({
   const cardHeight = isSmall ? 133 : 160
 
   const [isHovered, setIsHovered] = useState(false)
-  const [isDragging, setIsDragging] = useState(false)
-
-  const handleMouseDown = () => {
-    setIsDragging(false)
-  }
-
-  const handleMouseMove = () => {
-    setIsDragging(true)
-  }
 
   const handleClick = () => {
-    if (!isDragging && onClick) {
-      onClick(candidate)
-    }
+    onClick?.(candidate)
   }
 
   const handlePlayClick = (event: React.MouseEvent) => {
@@ -53,8 +42,6 @@ export function CandidateCard({
       w={cardWidth}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
       onClick={handleClick}
       style={{
         cursor: onClick ? 'pointer' : 'default',
