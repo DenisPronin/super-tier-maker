@@ -38,10 +38,35 @@ Imports:
 - Only exception: if user explicitly says "create plan and implement it" in the same request.
 - When resuming from context/summary, do NOT automatically continue implementation.
 
-- Execute one step at a time
-- After each step:
-    - explain what was done
-    - say what the next step will be
-- Assume prettier is run after each step
-- Check for TypeScript errors conceptually
-- Do NOT proceed to the next step without my confirmation
+**CRITICAL: Step-by-step execution with mandatory confirmation**
+
+- Execute ONLY ONE step at a time
+- NEVER execute multiple steps in sequence without explicit confirmation for each step
+- This applies to:
+  - Plan steps
+  - Todo list items
+  - Any multi-step task
+- NO EXCEPTIONS for "agreed plans" or "confirmed todo lists"
+
+After EACH step completion:
+1. Explain what was done
+2. Ask: "Продолжить со следующим шагом?" or similar
+3. WAIT for explicit user confirmation
+4. Only then proceed to the next step
+
+Why this is critical:
+- Better user experience and control
+- Easier code review
+- Prevents missing important details
+- Allows course correction at any point
+
+Violating this rule degrades user experience and code quality.
+
+---
+### Testing and validation:
+
+- All testing is done by the developer
+- DO NOT run `npm run build` or similar build commands
+- DO NOT run the application to verify functionality
+- You may run `npx tsc --noEmit` for type checking only
+- Assume developer will test and report issues
