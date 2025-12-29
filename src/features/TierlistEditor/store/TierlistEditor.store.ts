@@ -14,10 +14,12 @@ import {
   apiUpdateTierlistMeta,
 } from '../TierlistEditor.api'
 import { FEATURE_NAME } from '../TierlistEditor.model'
-import type {
-  Category,
-  CreateCategoryRequest,
-  UpdateCategoryRequest,
+import {
+  CATEGORY_MOVE_DIRECTION,
+  type Category,
+  type CategoryMoveDirection,
+  type CreateCategoryRequest,
+  type UpdateCategoryRequest,
 } from '../TierlistEditor.types'
 
 type TierlistEditorState = {
@@ -46,6 +48,7 @@ type TierlistEditorState = {
   createCategory: (data: CreateCategoryRequest) => Promise<void>
   updateCategory: (id: string, updates: UpdateCategoryRequest) => Promise<void>
   deleteCategory: (id: string) => Promise<void>
+  moveCategory: (id: string, direction: CategoryMoveDirection) => Promise<void>
 
   reset: () => void
 }
@@ -130,8 +133,14 @@ export const useTierlistEditorStore = createStore<TierlistEditorState>()(
       const { tierlistId } = get()
       if (!tierlistId) throw new Error('No tierlist loaded')
 
-      const newCategory = await apiCreateCategory(tierlistId, data)
       const currentCategories = get().categories.data || []
+      const nextSortOrder = currentCategories.length
+
+      const newCategory = await apiCreateCategory(tierlistId, {
+        ...data,
+        sort_order: nextSortOrder,
+      })
+
       set({
         categories: {
           ...get().categories,
@@ -160,6 +169,45 @@ export const useTierlistEditorStore = createStore<TierlistEditorState>()(
         categories: {
           ...get().categories,
           data: currentCategories.filter((cat) => cat.id !== id),
+        },
+      })
+    },
+
+    moveCategory: async (id: string, direction: CategoryMoveDirection) => {
+      const currentCategories = get().categories.data || []
+      const currentIndex = currentCategories.findIndex((cat) => cat.id === id)
+
+      const offset = direction === CATEGORY_MOVE_DIRECTION.UP ? -1 : 1
+      const targetIndex = currentIndex + offset
+
+      if (targetIndex < 0 || targetIndex >= currentCategories.length) return
+
+      const currentCategory = currentCategories[currentIndex]
+      const targetCategory = currentCategories[targetIndex]
+
+      await Promise.all([
+        apiUpdateCategory(currentCategory.id, {
+          sort_order: targetCategory.sort_order,
+        }),
+        apiUpdateCategory(targetCategory.id, {
+          sort_order: currentCategory.sort_order,
+        }),
+      ])
+
+      const updatedCategories = [...currentCategories]
+      updatedCategories[currentIndex] = {
+        ...currentCategory,
+        sort_order: targetCategory.sort_order,
+      }
+      updatedCategories[targetIndex] = {
+        ...targetCategory,
+        sort_order: currentCategory.sort_order,
+      }
+
+      set({
+        categories: {
+          ...get().categories,
+          data: updatedCategories.sort((a, b) => a.sort_order - b.sort_order),
         },
       })
     },
