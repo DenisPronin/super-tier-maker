@@ -1,17 +1,23 @@
 import {
   ActionIcon,
+  Box,
   Button,
+  type ComboboxItem,
+  Flex,
   Group,
   Image,
   Modal,
+  Select,
   Stack,
   Text,
 } from '@mantine/core'
 import { IconEdit, IconPlayerPlay, IconTrash } from '@tabler/icons-react'
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   selectCandidates,
+  selectCategories,
   selectIsCandidateViewModalOpen,
+  selectPlacements,
   selectViewingCandidateId,
   useTierlistEditorStore,
 } from '../../../store/TierlistEditor.store'
@@ -20,6 +26,8 @@ export function CandidateViewModal() {
   const isOpen = useTierlistEditorStore(selectIsCandidateViewModalOpen)
   const viewingCandidateId = useTierlistEditorStore(selectViewingCandidateId)
   const candidates = useTierlistEditorStore(selectCandidates)
+  const categories = useTierlistEditorStore(selectCategories)
+  const placements = useTierlistEditorStore(selectPlacements)
   const closeViewModal = useTierlistEditorStore(
     (state) => state.closeCandidateViewModal
   )
@@ -29,13 +37,53 @@ export function CandidateViewModal() {
   const deleteCandidate = useTierlistEditorStore(
     (state) => state.deleteCandidate
   )
+  const updatePlacement = useTierlistEditorStore(
+    (state) => state.updatePlacement
+  )
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
 
   const candidate =
     (candidates.data || []).find((cand) => cand.id === viewingCandidateId) ||
     null
+
+  const currentPlacement = candidate ? placements.get(candidate.id) : null
+  const currentCategoryId = currentPlacement?.category_id || null
+
+  useEffect(() => {
+    if (isOpen && candidate) {
+      setSelectedCategory(currentCategoryId)
+    }
+  }, [isOpen, candidate, currentCategoryId])
+
+  const categoryOptions = useMemo(() => {
+    return (categories.data || []).map((category) => ({
+      value: category.id,
+      label: category.title,
+      color: category.color,
+    }))
+  }, [categories.data])
+
+  const renderOption = ({ option }: { option: ComboboxItem }) => {
+    const category = (categories.data || []).find(
+      (cat) => cat.id === option.value
+    )
+    return (
+      <Group gap="xs">
+        <Box
+          style={{
+            width: 12,
+            height: 12,
+            backgroundColor: category?.color || '#e9ecef',
+            borderRadius: 2,
+          }}
+        />
+        <Text>{option.label}</Text>
+      </Group>
+    )
+  }
 
   const handleEdit = () => {
     if (!candidate) return
@@ -72,30 +120,55 @@ export function CandidateViewModal() {
     }
   }
 
+  const handleConfirm = async () => {
+    if (!candidate || selectedCategory === null) return
+
+    try {
+      await updatePlacement(candidate.id, selectedCategory, 0)
+      closeViewModal()
+    } catch (error) {
+      console.error('Failed to update placement:', error)
+    }
+  }
+
   if (!candidate) return null
+
+  const selectedCategoryData = (categories.data || []).find(
+    (cat) => cat.id === selectedCategory
+  )
 
   return (
     <>
       <Modal
         opened={isOpen}
         onClose={closeViewModal}
-        title={candidate.title}
-        size="lg"
+        title={
+          <Stack gap={0}>
+            <Text>{candidate.title}</Text>
+            <Text size="xs" c="dimmed">
+              {candidate.comment && `${candidate.comment}, `}
+              {candidate.year}
+            </Text>
+          </Stack>
+        }
+        centered
+        size="700px"
       >
-        <Stack gap="md">
-          <div style={{ position: 'relative' }}>
+        <Flex gap="md">
+          <Box style={{ flexShrink: 0, position: 'relative' }}>
             {candidate.preview_url ? (
               <Image
                 src={candidate.preview_url}
                 alt={candidate.title}
-                h={400}
+                width={120}
                 fit="cover"
                 radius="md"
               />
             ) : (
               <div
                 style={{
-                  height: 400,
+                  width: 120,
+                  height: 160,
                   backgroundColor: '#e9ecef',
                   borderRadius: 8,
                 }}
@@ -104,48 +177,82 @@ export function CandidateViewModal() {
 
             {candidate.url && (
               <ActionIcon
-                onClick={handlePlayClick}
-                size="xl"
-                radius="xl"
+                size="lg"
                 variant="filled"
-                color="blue"
+                color="dark"
                 style={{
                   position: 'absolute',
-                  top: 16,
-                  left: 16,
+                  top: 8,
+                  left: 8,
+                  opacity: 0.8,
                 }}
+                onClick={handlePlayClick}
               >
-                <IconPlayerPlay size={24} />
+                <IconPlayerPlay size={20} />
               </ActionIcon>
             )}
-          </div>
+          </Box>
 
-          {candidate.year && (
-            <Text size="sm" c="dimmed">
-              {candidate.comment && `${candidate.comment}, `}
-              {candidate.year}
-            </Text>
-          )}
+          <Box style={{ flex: 1 }}>
+            <Select
+              label="Select Category"
+              placeholder="Choose a category"
+              data={categoryOptions}
+              value={selectedCategory}
+              onChange={setSelectedCategory}
+              renderOption={renderOption}
+              styles={{
+                label: {
+                  marginBottom: '8px',
+                },
+              }}
+              leftSection={
+                selectedCategoryData ? (
+                  <Box
+                    style={{
+                      width: 12,
+                      height: 12,
+                      backgroundColor: selectedCategoryData.color || '#e9ecef',
+                      borderRadius: 2,
+                    }}
+                  />
+                ) : null
+              }
+            />
+          </Box>
+        </Flex>
 
-          <Group justify="space-between" mt="md">
-            <Button
-              leftSection={<IconEdit size={18} />}
-              onClick={handleEdit}
-              variant="light"
-            >
-              Edit
-            </Button>
+        <Group justify="flex-end" mt="md">
+          <Button
+            leftSection={<IconEdit size={18} />}
+            onClick={handleEdit}
+            variant="light"
+            size="sm"
+          >
+            Edit
+          </Button>
 
-            <Button
-              leftSection={<IconTrash size={18} />}
-              onClick={handleDeleteClick}
-              color="red"
-              variant="light"
-            >
-              Delete
-            </Button>
-          </Group>
-        </Stack>
+          <Button
+            leftSection={<IconTrash size={18} />}
+            onClick={handleDeleteClick}
+            color="red"
+            variant="light"
+            size="sm"
+          >
+            Delete
+          </Button>
+
+          <Box flex={1} />
+
+          <Button
+            variant="filled"
+            color="blue"
+            disabled={!selectedCategory}
+            onClick={handleConfirm}
+          >
+            Confirm
+          </Button>
+        </Group>
       </Modal>
 
       <Modal
