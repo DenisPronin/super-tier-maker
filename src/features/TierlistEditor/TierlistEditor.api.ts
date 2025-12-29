@@ -212,3 +212,36 @@ export async function apiUpdatePlacement(
 
   return data as Placement
 }
+
+export async function apiBulkCreateCandidates(
+  tierlistId: string,
+  candidates: CreateCandidateRequest[]
+): Promise<Candidate[]> {
+  const candidatesData = candidates.map((candidate, index) => ({
+    tierlist_id: tierlistId,
+    title: candidate.title,
+    comment: candidate.comment || null,
+    year: candidate.year || null,
+    preview_url: candidate.preview_url || null,
+    url: candidate.url || null,
+    sort_order: index,
+  }))
+
+  const { data: createdCandidates, error } = await supabase
+    .from('tierlist_candidates')
+    .insert(candidatesData)
+    .select()
+
+  if (error) throw new Error(error.message)
+
+  const placementsData = createdCandidates.map((candidate, index) => ({
+    tierlist_id: tierlistId,
+    candidate_id: candidate.id,
+    category_id: null,
+    sort_order: index,
+  }))
+
+  await supabase.from('tierlist_placements').insert(placementsData)
+
+  return createdCandidates as Candidate[]
+}

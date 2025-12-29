@@ -1,4 +1,4 @@
-import { Alert, Center, Container, Loader, Stack } from '@mantine/core'
+import { Alert, Box, Center, Loader, Stack } from '@mantine/core'
 import { useEffect } from 'react'
 import { useParams } from 'react-router-dom'
 import {
@@ -7,7 +7,9 @@ import {
   selectTierlist,
   useTierlistEditorStore,
 } from '../../store/TierlistEditor.store'
+import { CandidateBulkImportModal } from '../Candidates/CandidateBulkImportModal/CandidateBulkImportModal'
 import { CandidateModal } from '../Candidates/CandidateModal/CandidateModal'
+import { CandidateViewModal } from '../Candidates/CandidateViewModal/CandidateViewModal'
 import { UnplacedCandidatesList } from '../Candidates/UnplacedCandidatesList/UnplacedCandidatesList'
 import { CategoryList } from '../TierlistEditorCategories/CategoryList/CategoryList'
 import { CategoryModal } from '../TierlistEditorCategories/CategoryModal/CategoryModal'
@@ -42,26 +44,26 @@ export function TierlistEditorPage() {
 
   if (error) {
     return (
-      <Container size="md" py="xl">
+      <Box p="md">
         <Alert color="red" title="Error">
           {error}
         </Alert>
-      </Container>
+      </Box>
     )
   }
 
   if (!tierlist.data) {
     return (
-      <Container size="md" py="xl">
+      <Box p="md">
         <Alert color="yellow" title="Not Found">
           Tierlist not found
         </Alert>
-      </Container>
+      </Box>
     )
   }
 
   return (
-    <Container size="xl" py="md">
+    <Box p="md">
       <Stack gap="lg">
         <TierlistHeader />
 
@@ -73,6 +75,8 @@ export function TierlistEditorPage() {
       <TierlistMetaModal />
       <CategoryModal />
       <CandidateModal />
-    </Container>
+      <CandidateViewModal />
+      <CandidateBulkImportModal />
+    </Box>
   )
 }
