@@ -1,10 +1,8 @@
 import { ActionIcon, Box, Flex, Menu, Paper } from '@mantine/core'
-import { modals } from '@mantine/modals'
-import { notifications } from '@mantine/notifications'
-import { IconDots, IconEdit, IconTrash } from '@tabler/icons-react'
-import { useState } from 'react'
+import { IconDots, IconEdit } from '@tabler/icons-react'
 import { useTierlistEditorStore } from '../../../store/TierlistEditor.store'
 import type { Category } from '../../../TierlistEditor.types'
+import { CategoryDeleteControl } from '../CategoryDeleteControl/CategoryDeleteControl'
 
 interface CategoryItemProps {
   category: Category
@@ -14,35 +12,9 @@ export function CategoryItem({ category }: CategoryItemProps) {
   const openCategoryModal = useTierlistEditorStore(
     (state) => state.openCategoryModal
   )
-  const deleteCategory = useTierlistEditorStore((state) => state.deleteCategory)
-
-  const [isDeleting, setIsDeleting] = useState(false)
 
   const handleEdit = () => {
     openCategoryModal(category.id)
-  }
-
-  const handleDelete = () => {
-    modals.openConfirmModal({
-      title: 'Delete Category',
-      children: `Are you sure you want to delete "${category.title}"? This action cannot be undone.`,
-      labels: { confirm: 'Delete', cancel: 'Cancel' },
-      confirmProps: { color: 'red' },
-      onConfirm: async () => {
-        setIsDeleting(true)
-        try {
-          await deleteCategory(category.id)
-        } catch (err) {
-          notifications.show({
-            title: 'Error',
-            message: err instanceof Error ? err.message : 'Failed to delete category',
-            color: 'red',
-          })
-        } finally {
-          setIsDeleting(false)
-        }
-      },
-    })
   }
 
   return (
@@ -75,7 +47,7 @@ export function CategoryItem({ category }: CategoryItemProps) {
         >
           <Menu shadow="md" width={160}>
             <Menu.Target>
-              <ActionIcon variant="subtle" loading={isDeleting}>
+              <ActionIcon variant="subtle">
                 <IconDots size={18} />
               </ActionIcon>
             </Menu.Target>
@@ -87,13 +59,11 @@ export function CategoryItem({ category }: CategoryItemProps) {
               >
                 Edit
               </Menu.Item>
-              <Menu.Item
-                leftSection={<IconTrash size={16} />}
-                onClick={handleDelete}
-                color="red"
-              >
-                Delete
-              </Menu.Item>
+
+              <CategoryDeleteControl
+                categoryId={category.id}
+                categoryTitle={category.title}
+              />
             </Menu.Dropdown>
           </Menu>
         </Box>
