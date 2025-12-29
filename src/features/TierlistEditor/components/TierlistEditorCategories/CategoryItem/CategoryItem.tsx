@@ -39,6 +39,20 @@ export function CategoryItem({ category }: CategoryItemProps) {
         </Styled.Label>
 
         <Styled.Content $isEmpty={candidatesInCategory.length === 0}>
+          <div
+            style={{
+              position: 'absolute',
+              top: 8,
+              right: 8,
+              zIndex: 1,
+            }}
+          >
+            <CategoryItemControls
+              categoryId={category.id}
+              categoryTitle={category.title}
+            />
+          </div>
+
           <Flex wrap="wrap" gap="8px">
             {candidatesInCategory.map((candidate) => (
               <CandidateCard
@@ -49,11 +63,6 @@ export function CategoryItem({ category }: CategoryItemProps) {
                 onPlayClick={handlePlayClick}
               />
             ))}
-
-            <CategoryItemControls
-              categoryId={category.id}
-              categoryTitle={category.title}
-            />
           </Flex>
         </Styled.Content>
       </Flex>
