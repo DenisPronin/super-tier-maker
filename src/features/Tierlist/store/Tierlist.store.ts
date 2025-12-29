@@ -46,7 +46,7 @@ export const useTierlistStore = createStore<TierlistState>()(
       TierList[],
       string,
       'tierlists'
-    >({ getState: get, setState: set } as any, 'tierlists', {
+    >({ getState: get, setState: set }, 'tierlists', {
       fetchFunction: async (userId: string) => {
         return await apiFetchTierLists(userId)
       },
@@ -57,7 +57,7 @@ export const useTierlistStore = createStore<TierlistState>()(
       TierList,
       { userId: string; request: CreateTierListRequest; previewFile?: File },
       'newTierlist'
-    >({ getState: get, setState: set } as any, 'newTierlist', {
+    >({ getState: get, setState: set }, 'newTierlist', {
       fetchFunction: async ({ userId, request, previewFile }) => {
         let newTierlist = await apiCreateTierList(userId, request)
 
@@ -103,7 +103,7 @@ export const useTierlistStore = createStore<TierlistState>()(
       TierList,
       { tierlistId: string; file: File },
       'previewUpload'
-    >({ getState: get, setState: set } as any, 'previewUpload', {
+    >({ getState: get, setState: set }, 'previewUpload', {
       fetchFunction: async ({ tierlistId, file }) => {
         const updatedTierlist = await apiUpdateTierListPreview(tierlistId, file)
 
