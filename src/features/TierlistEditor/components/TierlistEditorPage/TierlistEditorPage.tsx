@@ -7,6 +7,8 @@ import {
   selectTierlist,
   useTierlistEditorStore,
 } from '../../store/TierlistEditor.store'
+import { CategoryList } from '../TierlistEditorCategories/CategoryList/CategoryList'
+import { CategoryModal } from '../TierlistEditorCategories/CategoryModal/CategoryModal'
 import { TierlistHeader } from '../TierlistHeader/TierlistHeader'
 import { TierlistMetaModal } from '../TierlistMetaModal/TierlistMetaModal'
 
@@ -15,18 +17,18 @@ export function TierlistEditorPage() {
   const tierlist = useTierlistEditorStore(selectTierlist)
   const isLoading = useTierlistEditorStore(selectIsLoading)
   const error = useTierlistEditorStore(selectError)
-  const loadTierlist = useTierlistEditorStore((state) => state.loadTierlist)
+  const loadEditor = useTierlistEditorStore((state) => state.loadEditor)
   const reset = useTierlistEditorStore((state) => state.reset)
 
   useEffect(() => {
     if (id) {
-      loadTierlist(id)
+      loadEditor(id)
     }
 
     return () => {
       reset()
     }
-  }, [id, loadTierlist, reset])
+  }, [id, loadEditor, reset])
 
   if (isLoading) {
     return (
@@ -46,7 +48,7 @@ export function TierlistEditorPage() {
     )
   }
 
-  if (!tierlist) {
+  if (!tierlist.data) {
     return (
       <Container size="md" py="xl">
         <Alert color="yellow" title="Not Found">
@@ -60,10 +62,11 @@ export function TierlistEditorPage() {
     <Container size="xl" py="md">
       <Stack gap="lg">
         <TierlistHeader />
-        {/* TODO: Add CategoryList */}
+        <CategoryList />
       </Stack>
 
       <TierlistMetaModal />
+      <CategoryModal />
     </Container>
   )
 }

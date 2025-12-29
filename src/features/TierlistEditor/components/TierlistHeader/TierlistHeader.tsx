@@ -10,11 +10,11 @@ export function TierlistHeader() {
   const tierlist = useTierlistEditorStore(selectTierlist)
   const openMetaModal = useTierlistEditorStore((state) => state.openMetaModal)
 
-  if (!tierlist) return null
+  if (!tierlist.data) return null
 
   const breadcrumbItems = [
     { title: 'Dashboard', href: '/app/dashboard' },
-    { title: tierlist.title, href: null },
+    { title: tierlist.data.title, href: null },
   ]
 
   return (
@@ -32,7 +32,7 @@ export function TierlistHeader() {
           )}
         </Breadcrumbs>
 
-        <Title order={2}>{tierlist.title}</Title>
+        <Title order={2}>{tierlist.data.title}</Title>
       </div>
 
       <Button leftSection={<IconEdit size={18} />} onClick={openMetaModal}>

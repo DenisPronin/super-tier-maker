@@ -6,30 +6,30 @@ import type {
   UpdateCategoryRequest,
 } from './TierlistEditor.types'
 
-export async function apiFetchTierlistForEditor(tierlistId: string): Promise<{
-  tierlist: TierList
-  categories: Category[]
-}> {
-  const { data: tierlist, error: tierlistError } = await supabase
+export async function apiFetchTierlist(tierlistId: string): Promise<TierList> {
+  const { data, error } = await supabase
     .from('tierlists')
     .select('*')
     .eq('id', tierlistId)
     .single()
 
-  if (tierlistError) throw new Error(tierlistError.message)
+  if (error) throw new Error(error.message)
 
-  const { data: categories, error: categoriesError } = await supabase
+  return data as TierList
+}
+
+export async function apiFetchCategories(
+  tierlistId: string
+): Promise<Category[]> {
+  const { data, error } = await supabase
     .from('tierlist_categories')
     .select('*')
     .eq('tierlist_id', tierlistId)
     .order('sort_order', { ascending: true })
 
-  if (categoriesError) throw new Error(categoriesError.message)
+  if (error) throw new Error(error.message)
 
-  return {
-    tierlist: tierlist as TierList,
-    categories: (categories as Category[]) || [],
-  }
+  return (data as Category[]) || []
 }
 
 export async function apiUpdateTierlistMeta(

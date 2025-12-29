@@ -40,7 +40,7 @@ export function TierlistMetaModal() {
       values: { title: string; description: string },
       previewFile: File | null
     ) => {
-      if (!tierlist) return
+      if (!tierlist.data) return
 
       setIsLoading(true)
       setError(null)
@@ -52,7 +52,7 @@ export function TierlistMetaModal() {
         })
 
         if (previewFile) {
-          await apiUpdateTierListPreview(tierlist.id, previewFile)
+          await apiUpdateTierListPreview(tierlist.data.id, previewFile)
         }
 
         handleClose()
@@ -65,11 +65,11 @@ export function TierlistMetaModal() {
     [tierlist, updateMeta, handleClose]
   )
 
-  if (!tierlist) return null
+  if (!tierlist.data) return null
 
   const previewUrl = getPreviewUrl(
-    tierlist.preview_path,
-    tierlist.preview_updated_at
+    tierlist.data.preview_path,
+    tierlist.data.preview_updated_at
   )
 
   return (
@@ -81,11 +81,11 @@ export function TierlistMetaModal() {
     >
       <TierlistMetaForm
         initialValues={{
-          title: tierlist.title,
-          description: tierlist.meta.description || '',
+          title: tierlist.data.title,
+          description: tierlist.data.meta.description || '',
         }}
         currentPreviewUrl={previewUrl}
-        tierlistId={tierlist.id}
+        tierlistId={tierlist.data.id}
         onSubmit={handleSubmit}
         isLoading={isLoading}
         error={error}
