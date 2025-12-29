@@ -6,6 +6,7 @@ import {
 import type { TierList } from '@/features/Tierlist/Tierlist.types'
 import type { StateLoadableSlice } from '@/types'
 import {
+  apiBulkCreateCandidates,
   apiCreateCandidate,
   apiCreateCategory,
   apiDeleteCandidate,
@@ -44,6 +45,7 @@ type TierlistEditorState = {
   editingCategoryId: string | null
   isCandidateModalOpen: boolean
   editingCandidateId: string | null
+  isBulkImportModalOpen: boolean
 
   loadEditor: (id: string) => Promise<void>
   fetchTierlist: () => Promise<void>
@@ -81,6 +83,12 @@ type TierlistEditorState = {
   openCandidateModal: (candidateId?: string) => void
   closeCandidateModal: () => void
 
+  bulkCreateCandidates: (
+    candidates: CreateCandidateRequest[]
+  ) => Promise<void>
+  openBulkImportModal: () => void
+  closeBulkImportModal: () => void
+
   reset: () => void
 }
 
@@ -95,6 +103,7 @@ const initialState = {
   editingCategoryId: null,
   isCandidateModalOpen: false,
   editingCandidateId: null,
+  isBulkImportModalOpen: false,
 }
 
 export const useTierlistEditorStore = createStore<TierlistEditorState>()(
@@ -362,6 +371,29 @@ export const useTierlistEditorStore = createStore<TierlistEditorState>()(
         editingCandidateId: null,
       }),
 
+    bulkCreateCandidates: async (candidates: CreateCandidateRequest[]) => {
+      const { tierlistId } = get()
+      if (!tierlistId) throw new Error('No tierlist loaded')
+
+      const newCandidates = await apiBulkCreateCandidates(
+        tierlistId,
+        candidates
+      )
+
+      const currentCandidates = get().candidates.data || []
+      set({
+        candidates: {
+          ...get().candidates,
+          data: [...currentCandidates, ...newCandidates],
+        },
+      })
+
+      await get().fetchPlacements()
+    },
+
+    openBulkImportModal: () => set({ isBulkImportModalOpen: true }),
+    closeBulkImportModal: () => set({ isBulkImportModalOpen: false }),
+
     reset: () => set(initialState),
   }),
   { name: FEATURE_NAME, resettable: true }
@@ -386,6 +418,8 @@ export const selectIsCandidateModalOpen = (state: TierlistEditorState) =>
   state.isCandidateModalOpen
 export const selectEditingCandidateId = (state: TierlistEditorState) =>
   state.editingCandidateId
+export const selectIsBulkImportModalOpen = (state: TierlistEditorState) =>
+  state.isBulkImportModalOpen
 
 export const selectCandidatesInCategory =
   (categoryId: string) => (state: TierlistEditorState) => {

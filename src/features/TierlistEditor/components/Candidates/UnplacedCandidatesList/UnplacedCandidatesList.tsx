@@ -1,5 +1,5 @@
 import { Button, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core'
-import { IconPlus } from '@tabler/icons-react'
+import { IconFileImport, IconPlus } from '@tabler/icons-react'
 import { useShallow } from 'zustand/react/shallow'
 import {
   selectUnplacedCandidates,
@@ -14,6 +14,9 @@ export function UnplacedCandidatesList() {
   const openCandidateModal = useTierlistEditorStore(
     (state) => state.openCandidateModal
   )
+  const openBulkImportModal = useTierlistEditorStore(
+    (state) => state.openBulkImportModal
+  )
 
   return (
     <Stack gap="md">
@@ -25,13 +28,24 @@ export function UnplacedCandidatesList() {
           </Text>
         </Group>
 
-        <Button
-          leftSection={<IconPlus size={18} />}
-          onClick={() => openCandidateModal()}
-          size="sm"
-        >
-          Add Candidate
-        </Button>
+        <Group gap="xs">
+          <Button
+            leftSection={<IconFileImport size={18} />}
+            onClick={() => openBulkImportModal()}
+            size="sm"
+            variant="light"
+          >
+            Import JSON
+          </Button>
+
+          <Button
+            leftSection={<IconPlus size={18} />}
+            onClick={() => openCandidateModal()}
+            size="sm"
+          >
+            Add Candidate
+          </Button>
+        </Group>
       </Group>
 
       {unplacedCandidates.length > 0 ? (
