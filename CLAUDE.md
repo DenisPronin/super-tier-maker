@@ -70,3 +70,14 @@ Violating this rule degrades user experience and code quality.
 - DO NOT run the application to verify functionality
 - You may run `npx tsc --noEmit` for type checking only
 - Assume developer will test and report issues
+
+---
+### User notifications and confirmations:
+
+- NEVER use native `alert()` - replace with toast notifications
+- NEVER use native `confirm()` - use `modals.openConfirmModal()` from @mantine/modals
+- Examples:
+  - ❌ `alert('Error happened')`
+  - ✅ `notifications.show({ title: 'Error', message: 'Error happened', color: 'red' })`
+  - ❌ `if (confirm('Delete?')) { ... }`
+  - ✅ `modals.openConfirmModal({ title: 'Delete?', onConfirm: () => { ... } })`

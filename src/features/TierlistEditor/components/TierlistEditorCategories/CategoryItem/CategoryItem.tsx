@@ -1,4 +1,6 @@
-import { ActionIcon, Badge, Group, Menu } from '@mantine/core'
+import { ActionIcon, Box, Flex, Menu, Paper } from '@mantine/core'
+import { modals } from '@mantine/modals'
+import { notifications } from '@mantine/notifications'
 import { IconDots, IconEdit, IconTrash } from '@tabler/icons-react'
 import { useState } from 'react'
 import { useTierlistEditorStore } from '../../../store/TierlistEditor.store'
@@ -20,52 +22,82 @@ export function CategoryItem({ category }: CategoryItemProps) {
     openCategoryModal(category.id)
   }
 
-  const handleDelete = async () => {
-    if (!confirm(`Delete category "${category.title}"?`)) return
-
-    setIsDeleting(true)
-    try {
-      await deleteCategory(category.id)
-    } catch (err) {
-      alert(err instanceof Error ? err.message : 'Failed to delete category')
-    } finally {
-      setIsDeleting(false)
-    }
+  const handleDelete = () => {
+    modals.openConfirmModal({
+      title: 'Delete Category',
+      children: `Are you sure you want to delete "${category.title}"? This action cannot be undone.`,
+      labels: { confirm: 'Delete', cancel: 'Cancel' },
+      confirmProps: { color: 'red' },
+      onConfirm: async () => {
+        setIsDeleting(true)
+        try {
+          await deleteCategory(category.id)
+        } catch (err) {
+          notifications.show({
+            title: 'Error',
+            message: err instanceof Error ? err.message : 'Failed to delete category',
+            color: 'red',
+          })
+        } finally {
+          setIsDeleting(false)
+        }
+      },
+    })
   }
 
   return (
-    <Group justify="space-between" p="xs" style={{ borderRadius: 8 }}>
-      <Group gap="sm">
-        <Badge
-          color={category.color || 'gray'}
-          variant="filled"
-          size="lg"
-          style={{ minWidth: 80 }}
+    <Paper shadow="sm" radius="md" withBorder style={{ overflow: 'hidden' }}>
+      <Flex>
+        <Box
+          style={{
+            width: '120px',
+            backgroundColor: category.color || 'gray',
+            padding: '12px 16px',
+            fontWeight: 'bold',
+            color: 'white',
+            textAlign: 'center',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
         >
           {category.title}
-        </Badge>
-      </Group>
+        </Box>
 
-      <Menu shadow="md" width={160}>
-        <Menu.Target>
-          <ActionIcon variant="subtle" loading={isDeleting}>
-            <IconDots size={18} />
-          </ActionIcon>
-        </Menu.Target>
+        <Box
+          style={{
+            flex: 1,
+            padding: '12px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'flex-end',
+          }}
+        >
+          <Menu shadow="md" width={160}>
+            <Menu.Target>
+              <ActionIcon variant="subtle" loading={isDeleting}>
+                <IconDots size={18} />
+              </ActionIcon>
+            </Menu.Target>
 
-        <Menu.Dropdown>
-          <Menu.Item leftSection={<IconEdit size={16} />} onClick={handleEdit}>
-            Edit
-          </Menu.Item>
-          <Menu.Item
-            leftSection={<IconTrash size={16} />}
-            onClick={handleDelete}
-            color="red"
-          >
-            Delete
-          </Menu.Item>
-        </Menu.Dropdown>
-      </Menu>
-    </Group>
+            <Menu.Dropdown>
+              <Menu.Item
+                leftSection={<IconEdit size={16} />}
+                onClick={handleEdit}
+              >
+                Edit
+              </Menu.Item>
+              <Menu.Item
+                leftSection={<IconTrash size={16} />}
+                onClick={handleDelete}
+                color="red"
+              >
+                Delete
+              </Menu.Item>
+            </Menu.Dropdown>
+          </Menu>
+        </Box>
+      </Flex>
+    </Paper>
   )
 }
