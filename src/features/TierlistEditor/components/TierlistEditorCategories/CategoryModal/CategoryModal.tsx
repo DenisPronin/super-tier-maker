@@ -1,4 +1,4 @@
-import { Button, ColorPicker, Modal, Stack, TextInput } from '@mantine/core'
+import { Button, ColorPicker, Modal, Stack, Text, TextInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useEffect, useState } from 'react'
 import {
@@ -129,7 +129,9 @@ export function CategoryModal() {
           </div>
 
           {error && (
-            <div style={{ color: 'var(--mantine-color-red-6)' }}>{error}</div>
+            <Text c="red" size="sm">
+              {error}
+            </Text>
           )}
 
           <Stack gap="xs">
