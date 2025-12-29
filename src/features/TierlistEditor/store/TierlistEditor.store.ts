@@ -6,19 +6,29 @@ import {
 import type { TierList } from '@/features/Tierlist/Tierlist.types'
 import type { StateLoadableSlice } from '@/types'
 import {
+  apiCreateCandidate,
   apiCreateCategory,
+  apiDeleteCandidate,
   apiDeleteCategory,
+  apiFetchCandidates,
   apiFetchCategories,
+  apiFetchPlacements,
   apiFetchTierlist,
+  apiUpdateCandidate,
   apiUpdateCategory,
+  apiUpdatePlacement,
   apiUpdateTierlistMeta,
 } from '../TierlistEditor.api'
 import { FEATURE_NAME } from '../TierlistEditor.model'
 import {
-  CATEGORY_MOVE_DIRECTION,
+  type Candidate,
   type Category,
+  CATEGORY_MOVE_DIRECTION,
   type CategoryMoveDirection,
+  type CreateCandidateRequest,
   type CreateCategoryRequest,
+  type Placement,
+  type UpdateCandidateRequest,
   type UpdateCategoryRequest,
 } from '../TierlistEditor.types'
 
@@ -26,10 +36,14 @@ type TierlistEditorState = {
   tierlistId: string | null
   tierlist: StateLoadableSlice<TierList>
   categories: StateLoadableSlice<Category[]>
+  candidates: StateLoadableSlice<Candidate[]>
+  placements: Map<string, Placement>
 
   isMetaModalOpen: boolean
   isCategoryModalOpen: boolean
   editingCategoryId: string | null
+  isCandidateModalOpen: boolean
+  editingCandidateId: string | null
 
   loadEditor: (id: string) => Promise<void>
   fetchTierlist: () => Promise<void>
@@ -50,6 +64,23 @@ type TierlistEditorState = {
   deleteCategory: (id: string) => Promise<void>
   moveCategory: (id: string, direction: CategoryMoveDirection) => Promise<void>
 
+  fetchCandidates: () => Promise<void>
+  fetchPlacements: () => Promise<void>
+  createCandidate: (data: CreateCandidateRequest) => Promise<void>
+  updateCandidate: (
+    id: string,
+    updates: UpdateCandidateRequest
+  ) => Promise<void>
+  deleteCandidate: (id: string) => Promise<void>
+  updatePlacement: (
+    candidateId: string,
+    categoryId: string | null,
+    sortOrder: number
+  ) => Promise<void>
+
+  openCandidateModal: (candidateId?: string) => void
+  closeCandidateModal: () => void
+
   reset: () => void
 }
 
@@ -57,9 +88,13 @@ const initialState = {
   tierlistId: null,
   tierlist: createLoadableData<TierList>(),
   categories: createLoadableData<Category[]>(),
+  candidates: createLoadableData<Candidate[]>(),
+  placements: new Map<string, Placement>(),
   isMetaModalOpen: false,
   isCategoryModalOpen: false,
   editingCategoryId: null,
+  isCandidateModalOpen: false,
+  editingCandidateId: null,
 }
 
 export const useTierlistEditorStore = createStore<TierlistEditorState>()(
@@ -69,8 +104,14 @@ export const useTierlistEditorStore = createStore<TierlistEditorState>()(
     loadEditor: async (id: string) => {
       set({ tierlistId: id })
 
-      const { fetchTierlist, fetchCategories } = get()
-      await Promise.all([fetchTierlist(), fetchCategories()])
+      const { fetchTierlist, fetchCategories, fetchCandidates, fetchPlacements } =
+        get()
+      await Promise.all([
+        fetchTierlist(),
+        fetchCategories(),
+        fetchCandidates(),
+        fetchPlacements(),
+      ])
     },
 
     fetchTierlist: createAsyncAction<
@@ -212,6 +253,115 @@ export const useTierlistEditorStore = createStore<TierlistEditorState>()(
       })
     },
 
+    fetchCandidates: createAsyncAction<
+      TierlistEditorState,
+      Candidate[],
+      void,
+      'candidates'
+    >({ getState: get, setState: set }, 'candidates', {
+      fetchFunction: async () => {
+        const { tierlistId } = get()
+        if (!tierlistId) throw new Error('No tierlist ID')
+
+        return await apiFetchCandidates(tierlistId)
+      },
+    }),
+
+    fetchPlacements: async () => {
+      const { tierlistId } = get()
+      if (!tierlistId) throw new Error('No tierlist ID')
+
+      const placements = await apiFetchPlacements(tierlistId)
+      const placementsMap = new Map<string, Placement>()
+      placements.forEach((placement) => {
+        placementsMap.set(placement.candidate_id, placement)
+      })
+
+      set({ placements: placementsMap })
+    },
+
+    createCandidate: async (data: CreateCandidateRequest) => {
+      const { tierlistId } = get()
+      if (!tierlistId) throw new Error('No tierlist loaded')
+
+      const currentCandidates = get().candidates.data || []
+      const nextSortOrder = currentCandidates.length
+
+      const newCandidate = await apiCreateCandidate(tierlistId, {
+        ...data,
+        sort_order: nextSortOrder,
+      })
+
+      set({
+        candidates: {
+          ...get().candidates,
+          data: [...currentCandidates, newCandidate],
+        },
+      })
+
+      await get().fetchPlacements()
+    },
+
+    updateCandidate: async (id: string, updates: UpdateCandidateRequest) => {
+      const updatedCandidate = await apiUpdateCandidate(id, updates)
+      const currentCandidates = get().candidates.data || []
+      set({
+        candidates: {
+          ...get().candidates,
+          data: currentCandidates.map((cand) =>
+            cand.id === id ? updatedCandidate : cand
+          ),
+        },
+      })
+    },
+
+    deleteCandidate: async (id: string) => {
+      await apiDeleteCandidate(id)
+      const currentCandidates = get().candidates.data || []
+      set({
+        candidates: {
+          ...get().candidates,
+          data: currentCandidates.filter((cand) => cand.id !== id),
+        },
+      })
+
+      const currentPlacements = new Map(get().placements)
+      currentPlacements.delete(id)
+      set({ placements: currentPlacements })
+    },
+
+    updatePlacement: async (
+      candidateId: string,
+      categoryId: string | null,
+      sortOrder: number
+    ) => {
+      const { tierlistId } = get()
+      if (!tierlistId) throw new Error('No tierlist loaded')
+
+      const updatedPlacement = await apiUpdatePlacement(
+        tierlistId,
+        candidateId,
+        categoryId,
+        sortOrder
+      )
+
+      const currentPlacements = new Map(get().placements)
+      currentPlacements.set(candidateId, updatedPlacement)
+      set({ placements: currentPlacements })
+    },
+
+    openCandidateModal: (candidateId?: string) =>
+      set({
+        isCandidateModalOpen: true,
+        editingCandidateId: candidateId || null,
+      }),
+
+    closeCandidateModal: () =>
+      set({
+        isCandidateModalOpen: false,
+        editingCandidateId: null,
+      }),
+
     reset: () => set(initialState),
   }),
   { name: FEATURE_NAME, resettable: true }
@@ -229,3 +379,31 @@ export const selectIsCategoryModalOpen = (state: TierlistEditorState) =>
   state.isCategoryModalOpen
 export const selectEditingCategoryId = (state: TierlistEditorState) =>
   state.editingCategoryId
+
+export const selectCandidates = (state: TierlistEditorState) => state.candidates
+export const selectPlacements = (state: TierlistEditorState) => state.placements
+export const selectIsCandidateModalOpen = (state: TierlistEditorState) =>
+  state.isCandidateModalOpen
+export const selectEditingCandidateId = (state: TierlistEditorState) =>
+  state.editingCandidateId
+
+export const selectCandidatesInCategory =
+  (categoryId: string) => (state: TierlistEditorState) => {
+    const candidates = state.candidates.data || []
+    const placements = state.placements
+
+    return candidates.filter((candidate) => {
+      const placement = placements.get(candidate.id)
+      return placement?.category_id === categoryId
+    })
+  }
+
+export const selectUnplacedCandidates = (state: TierlistEditorState) => {
+  const candidates = state.candidates.data || []
+  const placements = state.placements
+
+  return candidates.filter((candidate) => {
+    const placement = placements.get(candidate.id)
+    return placement?.category_id === null
+  })
+}
