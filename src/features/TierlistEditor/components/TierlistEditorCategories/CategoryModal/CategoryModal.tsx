@@ -49,6 +49,10 @@ export function CategoryModal() {
     },
     validate: {
       title: (value) => (value.trim() ? null : 'Title is required'),
+      color: (value) => {
+        const hexRegex = /^#[0-9A-Fa-f]{6}$/
+        return hexRegex.test(value) ? null : 'Invalid hex color (e.g. #ff0000)'
+      },
     },
   })
 
@@ -115,9 +119,8 @@ export function CategoryModal() {
           <div>
             <TextInput
               label="Color"
-              placeholder="Pick a color"
+              placeholder="#ff0000"
               {...form.getInputProps('color')}
-              readOnly
             />
             <ColorPicker
               format="hex"
