@@ -1,11 +1,10 @@
 import { useAuthStore } from '@/app/imports/App.store'
 import { Button, Checkbox, Modal } from '@mantine/core'
 import { useForm } from '@mantine/form'
-import { useCallback, useEffect } from 'react'
+import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   selectIsCreateModalOpen,
-  selectNewTierlist,
   useTierlistStore,
 } from '../../store/Tierlist.store'
 import { TierlistMetaForm } from '../TierlistMetaForm/TierlistMetaForm'
@@ -14,10 +13,11 @@ export function TierlistCreateModal() {
   const navigate = useNavigate()
   const user = useAuthStore((state) => state.user)
   const isOpen = useTierlistStore(selectIsCreateModalOpen)
-  const newTierlist = useTierlistStore(selectNewTierlist)
   const closeModal = useTierlistStore((state) => state.closeCreateModal)
   const createAction = useTierlistStore((state) => state.createTierList)
-  const resetCreateState = useTierlistStore((state) => state.resetCreateState)
+
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const publicForm = useForm({
     initialValues: {
@@ -31,8 +31,11 @@ export function TierlistCreateModal() {
   ) => {
     if (!user) return
 
+    setIsLoading(true)
+    setError(null)
+
     try {
-      await createAction({
+      const newTierlist = await createAction({
         userId: user.id,
         request: {
           title: values.title,
@@ -41,23 +44,21 @@ export function TierlistCreateModal() {
         },
         previewFile: previewFile || undefined,
       })
-    } catch {
-      return
+
+      handleClose()
+      navigate(`/app/tierlist/${newTierlist.id}/edit`)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unknown error')
+    } finally {
+      setIsLoading(false)
     }
   }
 
   const handleClose = useCallback(() => {
     closeModal()
     publicForm.reset()
-    resetCreateState()
-  }, [closeModal, publicForm, resetCreateState])
-
-  useEffect(() => {
-    if (newTierlist.isSuccess && newTierlist.data) {
-      handleClose()
-      navigate(`/app/tierlist/${newTierlist.data.id}/edit`)
-    }
-  }, [newTierlist.isSuccess, newTierlist.data, navigate, handleClose])
+    setError(null)
+  }, [closeModal, publicForm])
 
   return (
     <Modal
@@ -68,15 +69,15 @@ export function TierlistCreateModal() {
     >
       <TierlistMetaForm
         onSubmit={handleSubmit}
-        isLoading={newTierlist.isLoading}
-        error={newTierlist.error}
+        isLoading={isLoading}
+        error={error}
       >
         <Checkbox
           label="Make this tier list public"
           {...publicForm.getInputProps('is_public', { type: 'checkbox' })}
         />
 
-        <Button type="submit" loading={newTierlist.isLoading} fullWidth>
+        <Button type="submit" loading={isLoading} fullWidth>
           Create Tier List
         </Button>
       </TierlistMetaForm>
