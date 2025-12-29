@@ -1,4 +1,4 @@
-import { Button, Group, SimpleGrid, Stack, Text, Title } from '@mantine/core'
+import { Button, Flex, Group, Stack, Text, Title } from '@mantine/core'
 import { IconFileImport, IconPlus } from '@tabler/icons-react'
 import { useShallow } from 'zustand/react/shallow'
 import {
@@ -48,13 +48,15 @@ export function UnplacedCandidatesList() {
         </Group>
       </Group>
 
-      {unplacedCandidates.length > 0 ? (
-        <SimpleGrid cols={{ base: 3, sm: 4, md: 6, lg: 8 }} spacing="sm">
+      {unplacedCandidates.length > 0 && (
+        <Flex wrap="wrap" gap="16px">
           {unplacedCandidates.map((candidate) => (
             <CandidateCard key={candidate.id} candidate={candidate} />
           ))}
-        </SimpleGrid>
-      ) : (
+        </Flex>
+      )}
+
+      {unplacedCandidates.length === 0 && (
         <Text c="dimmed" ta="center" py="xl">
           No unplaced candidates
         </Text>

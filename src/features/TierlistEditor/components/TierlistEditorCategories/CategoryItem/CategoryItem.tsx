@@ -28,7 +28,11 @@ export function CategoryItem({ category }: CategoryItemProps) {
         <Styled.Content $isEmpty={candidatesInCategory.length === 0}>
           <Flex wrap="wrap" gap="8px">
             {candidatesInCategory.map((candidate) => (
-              <CandidateCard key={candidate.id} candidate={candidate} />
+              <CandidateCard
+                key={candidate.id}
+                candidate={candidate}
+                size="small"
+              />
             ))}
 
             <CategoryItemControls
