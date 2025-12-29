@@ -1,6 +1,9 @@
 import { Button, Modal, Stack, Textarea, TextInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
+import { useEffect } from 'react'
 import {
+  selectCandidates,
+  selectEditingCandidateId,
   selectIsCandidateModalOpen,
   useTierlistEditorStore,
 } from '../../../store/TierlistEditor.store'
@@ -8,12 +11,22 @@ import type { CreateCandidateRequest } from '../../../TierlistEditor.types'
 
 export function CandidateModal() {
   const isOpen = useTierlistEditorStore(selectIsCandidateModalOpen)
+  const editingCandidateId = useTierlistEditorStore(selectEditingCandidateId)
+  const candidates = useTierlistEditorStore(selectCandidates)
   const closeCandidateModal = useTierlistEditorStore(
     (state) => state.closeCandidateModal
   )
   const createCandidate = useTierlistEditorStore(
     (state) => state.createCandidate
   )
+  const updateCandidate = useTierlistEditorStore(
+    (state) => state.updateCandidate
+  )
+
+  const isEditMode = editingCandidateId !== null
+  const editingCandidate = isEditMode
+    ? (candidates.data || []).find((cand) => cand.id === editingCandidateId)
+    : null
 
   const form = useForm<CreateCandidateRequest>({
     initialValues: {
@@ -35,6 +48,23 @@ export function CandidateModal() {
     },
   })
 
+  useEffect(() => {
+    if (isOpen) {
+      if (editingCandidate) {
+        form.setValues({
+          title: editingCandidate.title,
+          comment: editingCandidate.comment || '',
+          year: editingCandidate.year ?? undefined,
+          preview_url: editingCandidate.preview_url || '',
+          url: editingCandidate.url || '',
+        })
+      } else {
+        form.reset()
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, editingCandidate])
+
   const handleSubmit = async (values: CreateCandidateRequest) => {
     try {
       const data: CreateCandidateRequest = {
@@ -44,7 +74,12 @@ export function CandidateModal() {
         preview_url: values.preview_url || undefined,
         url: values.url || undefined,
       }
-      await createCandidate(data)
+
+      if (isEditMode && editingCandidateId) {
+        await updateCandidate(editingCandidateId, data)
+      } else {
+        await createCandidate(data)
+      }
       handleClose()
     } catch (error) {
       // Error handled by store
@@ -60,7 +95,7 @@ export function CandidateModal() {
     <Modal
       opened={isOpen}
       onClose={handleClose}
-      title="Create Candidate"
+      title={isEditMode ? 'Edit Candidate' : 'Create Candidate'}
       size="md"
     >
       <form onSubmit={form.onSubmit(handleSubmit)}>
@@ -98,7 +133,7 @@ export function CandidateModal() {
           />
 
           <Button type="submit" fullWidth>
-            Create Candidate
+            {isEditMode ? 'Save' : 'Create Candidate'}
           </Button>
         </Stack>
       </form>

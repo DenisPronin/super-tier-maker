@@ -1,21 +1,68 @@
-import { Card, Image, Stack, Text } from '@mantine/core'
+import { ActionIcon, Card, Image, Stack, Text } from '@mantine/core'
+import { IconPlayerPlay } from '@tabler/icons-react'
+import { useState } from 'react'
 import type { Candidate } from '../../../TierlistEditor.types'
 
 interface CandidateCardProps {
   candidate: Candidate
   size?: 'small' | 'normal'
+  onClick?: (candidate: Candidate) => void
+  onPlayClick?: (candidate: Candidate) => void
 }
 
 export function CandidateCard({
   candidate,
   size = 'normal',
+  onClick,
+  onPlayClick,
 }: CandidateCardProps) {
   const isSmall = size === 'small'
   const cardWidth = isSmall ? 100 : 120
   const cardHeight = isSmall ? 133 : 160
 
+  const [isHovered, setIsHovered] = useState(false)
+  const [isDragging, setIsDragging] = useState(false)
+
+  const handleMouseDown = () => {
+    setIsDragging(false)
+  }
+
+  const handleMouseMove = () => {
+    setIsDragging(true)
+  }
+
+  const handleClick = () => {
+    if (!isDragging && onClick) {
+      onClick(candidate)
+    }
+  }
+
+  const handlePlayClick = (event: React.MouseEvent) => {
+    event.stopPropagation()
+    if (onPlayClick) {
+      onPlayClick(candidate)
+    }
+  }
+
   return (
-    <Card shadow="sm" padding="xs" radius="md" withBorder w={cardWidth}>
+    <Card
+      shadow="sm"
+      padding="xs"
+      radius="md"
+      withBorder
+      w={cardWidth}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onClick={handleClick}
+      style={{
+        cursor: onClick ? 'pointer' : 'default',
+        transform: isHovered ? 'scale(1.05)' : 'scale(1)',
+        transition: 'transform 0.2s ease-in-out',
+        position: 'relative',
+      }}
+    >
       <Card.Section>
         {candidate.preview_url ? (
           <Image
@@ -26,6 +73,23 @@ export function CandidateCard({
           />
         ) : (
           <div style={{ height: cardHeight, backgroundColor: '#e9ecef' }} />
+        )}
+
+        {isHovered && candidate.url && onPlayClick && (
+          <ActionIcon
+            onClick={handlePlayClick}
+            size="lg"
+            radius="xl"
+            variant="filled"
+            color="dark"
+            style={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+            }}
+          >
+            <IconPlayerPlay size={20} />
+          </ActionIcon>
         )}
       </Card.Section>
 

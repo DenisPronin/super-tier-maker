@@ -9,6 +9,7 @@ import {
 } from '../../store/TierlistEditor.store'
 import { CandidateBulkImportModal } from '../Candidates/CandidateBulkImportModal/CandidateBulkImportModal'
 import { CandidateModal } from '../Candidates/CandidateModal/CandidateModal'
+import { CandidateViewModal } from '../Candidates/CandidateViewModal/CandidateViewModal'
 import { UnplacedCandidatesList } from '../Candidates/UnplacedCandidatesList/UnplacedCandidatesList'
 import { CategoryList } from '../TierlistEditorCategories/CategoryList/CategoryList'
 import { CategoryModal } from '../TierlistEditorCategories/CategoryModal/CategoryModal'
@@ -74,6 +75,7 @@ export function TierlistEditorPage() {
       <TierlistMetaModal />
       <CategoryModal />
       <CandidateModal />
+      <CandidateViewModal />
       <CandidateBulkImportModal />
     </Box>
   )

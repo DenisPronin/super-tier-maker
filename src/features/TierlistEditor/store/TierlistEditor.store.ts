@@ -45,6 +45,8 @@ type TierlistEditorState = {
   editingCategoryId: string | null
   isCandidateModalOpen: boolean
   editingCandidateId: string | null
+  isCandidateViewModalOpen: boolean
+  viewingCandidateId: string | null
   isBulkImportModalOpen: boolean
 
   loadEditor: (id: string) => Promise<void>
@@ -83,6 +85,9 @@ type TierlistEditorState = {
   openCandidateModal: (candidateId?: string) => void
   closeCandidateModal: () => void
 
+  openCandidateViewModal: (candidateId: string) => void
+  closeCandidateViewModal: () => void
+
   bulkCreateCandidates: (
     candidates: CreateCandidateRequest[]
   ) => Promise<void>
@@ -103,6 +108,8 @@ const initialState = {
   editingCategoryId: null,
   isCandidateModalOpen: false,
   editingCandidateId: null,
+  isCandidateViewModalOpen: false,
+  viewingCandidateId: null,
   isBulkImportModalOpen: false,
 }
 
@@ -371,6 +378,18 @@ export const useTierlistEditorStore = createStore<TierlistEditorState>()(
         editingCandidateId: null,
       }),
 
+    openCandidateViewModal: (candidateId: string) =>
+      set({
+        isCandidateViewModalOpen: true,
+        viewingCandidateId: candidateId,
+      }),
+
+    closeCandidateViewModal: () =>
+      set({
+        isCandidateViewModalOpen: false,
+        viewingCandidateId: null,
+      }),
+
     bulkCreateCandidates: async (candidates: CreateCandidateRequest[]) => {
       const { tierlistId } = get()
       if (!tierlistId) throw new Error('No tierlist loaded')
@@ -418,6 +437,10 @@ export const selectIsCandidateModalOpen = (state: TierlistEditorState) =>
   state.isCandidateModalOpen
 export const selectEditingCandidateId = (state: TierlistEditorState) =>
   state.editingCandidateId
+export const selectIsCandidateViewModalOpen = (state: TierlistEditorState) =>
+  state.isCandidateViewModalOpen
+export const selectViewingCandidateId = (state: TierlistEditorState) =>
+  state.viewingCandidateId
 export const selectIsBulkImportModalOpen = (state: TierlistEditorState) =>
   state.isBulkImportModalOpen
 

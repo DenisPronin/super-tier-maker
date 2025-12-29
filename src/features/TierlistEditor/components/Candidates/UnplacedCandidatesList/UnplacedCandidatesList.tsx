@@ -5,6 +5,7 @@ import {
   selectUnplacedCandidates,
   useTierlistEditorStore,
 } from '../../../store/TierlistEditor.store'
+import type { Candidate } from '../../../TierlistEditor.types'
 import { CandidateCard } from '../CandidateCard/CandidateCard'
 
 export function UnplacedCandidatesList() {
@@ -14,9 +15,22 @@ export function UnplacedCandidatesList() {
   const openCandidateModal = useTierlistEditorStore(
     (state) => state.openCandidateModal
   )
+  const openCandidateViewModal = useTierlistEditorStore(
+    (state) => state.openCandidateViewModal
+  )
   const openBulkImportModal = useTierlistEditorStore(
     (state) => state.openBulkImportModal
   )
+
+  const handleCandidateClick = (candidate: Candidate) => {
+    openCandidateViewModal(candidate.id)
+  }
+
+  const handlePlayClick = (candidate: Candidate) => {
+    if (candidate.url) {
+      window.open(candidate.url, '_blank', 'noopener,noreferrer')
+    }
+  }
 
   return (
     <Stack gap="md">
@@ -51,7 +65,12 @@ export function UnplacedCandidatesList() {
       {unplacedCandidates.length > 0 && (
         <Flex wrap="wrap" gap="16px">
           {unplacedCandidates.map((candidate) => (
-            <CandidateCard key={candidate.id} candidate={candidate} />
+            <CandidateCard
+              key={candidate.id}
+              candidate={candidate}
+              onClick={handleCandidateClick}
+              onPlayClick={handlePlayClick}
+            />
           ))}
         </Flex>
       )}

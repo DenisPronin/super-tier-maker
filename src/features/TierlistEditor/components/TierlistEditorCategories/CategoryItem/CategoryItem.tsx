@@ -4,7 +4,7 @@ import {
   selectCandidatesInCategory,
   useTierlistEditorStore,
 } from '../../../store/TierlistEditor.store'
-import type { Category } from '../../../TierlistEditor.types'
+import type { Candidate, Category } from '../../../TierlistEditor.types'
 import { CandidateCard } from '../../Candidates/CandidateCard/CandidateCard'
 import { CategoryItemControls } from '../CategoryItemControls/CategoryItemControls'
 import * as Styled from './CategoryItem.styled'
@@ -17,6 +17,19 @@ export function CategoryItem({ category }: CategoryItemProps) {
   const candidatesInCategory = useTierlistEditorStore(
     useShallow(selectCandidatesInCategory(category.id))
   )
+  const openCandidateViewModal = useTierlistEditorStore(
+    (state) => state.openCandidateViewModal
+  )
+
+  const handleCandidateClick = (candidate: Candidate) => {
+    openCandidateViewModal(candidate.id)
+  }
+
+  const handlePlayClick = (candidate: Candidate) => {
+    if (candidate.url) {
+      window.open(candidate.url, '_blank', 'noopener,noreferrer')
+    }
+  }
 
   return (
     <Styled.Container shadow="sm" radius="md" withBorder>
@@ -32,6 +45,8 @@ export function CategoryItem({ category }: CategoryItemProps) {
                 key={candidate.id}
                 candidate={candidate}
                 size="small"
+                onClick={handleCandidateClick}
+                onPlayClick={handlePlayClick}
               />
             ))}
 
