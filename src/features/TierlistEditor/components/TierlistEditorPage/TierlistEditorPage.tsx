@@ -7,6 +7,8 @@ import {
   selectTierlist,
   useTierlistEditorStore,
 } from '../../store/TierlistEditor.store'
+import { CandidateModal } from '../Candidates/CandidateModal/CandidateModal'
+import { UnplacedCandidatesList } from '../Candidates/UnplacedCandidatesList/UnplacedCandidatesList'
 import { CategoryList } from '../TierlistEditorCategories/CategoryList/CategoryList'
 import { CategoryModal } from '../TierlistEditorCategories/CategoryModal/CategoryModal'
 import { TierlistHeader } from '../TierlistHeader/TierlistHeader'
@@ -62,11 +64,15 @@ export function TierlistEditorPage() {
     <Container size="xl" py="md">
       <Stack gap="lg">
         <TierlistHeader />
+
         <CategoryList />
+
+        <UnplacedCandidatesList />
       </Stack>
 
       <TierlistMetaModal />
       <CategoryModal />
+      <CandidateModal />
     </Container>
   )
 }
