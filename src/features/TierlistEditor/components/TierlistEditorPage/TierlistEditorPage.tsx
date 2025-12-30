@@ -1,18 +1,17 @@
-import { Alert, Box, Center, Loader, Stack } from '@mantine/core'
 import {
   DndContext,
+  type DragEndEvent,
   DragOverlay,
+  type DragStartEvent,
   KeyboardSensor,
   MeasuringStrategy,
   PointerSensor,
   rectIntersection,
   useSensor,
   useSensors,
-  type DragEndEvent,
-  type DragStartEvent,
 } from '@dnd-kit/core'
-import { sortableKeyboardCoordinates } from '@dnd-kit/sortable'
-import { arrayMove } from '@dnd-kit/sortable'
+import { arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable'
+import { Alert, Box, Center, Loader, Stack } from '@mantine/core'
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import {
@@ -28,8 +27,8 @@ import {
   getCandidatesInContainer,
   UNPLACED_CONTAINER_ID,
 } from '../../utils/dnd.helpers'
-import { CandidateCard } from '../Candidates/CandidateCard/CandidateCard'
 import { CandidateBulkImportModal } from '../Candidates/CandidateBulkImportModal/CandidateBulkImportModal'
+import { CandidateCard } from '../Candidates/CandidateCard/CandidateCard'
 import { CandidateModal } from '../Candidates/CandidateModal/CandidateModal'
 import { CandidateViewModal } from '../Candidates/CandidateViewModal/CandidateViewModal'
 import { UnplacedCandidatesList } from '../Candidates/UnplacedCandidatesList/UnplacedCandidatesList'
@@ -59,7 +58,7 @@ export function TierlistEditorPage() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 3,
+        distance: 2,
       },
     }),
     useSensor(KeyboardSensor, {
