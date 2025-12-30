@@ -15,6 +15,7 @@ import {
   apiFetchCategories,
   apiFetchPlacements,
   apiFetchTierlist,
+  apiResetPlacements,
   apiUpdateCandidate,
   apiUpdateCategory,
   apiUpdatePlacement,
@@ -81,6 +82,7 @@ type TierlistEditorState = {
     categoryId: string | null,
     sortOrder: number
   ) => Promise<void>
+  resetPlacements: () => Promise<void>
 
   openCandidateModal: (candidateId?: string) => void
   closeCandidateModal: () => void
@@ -364,6 +366,26 @@ export const useTierlistEditorStore = createStore<TierlistEditorState>()(
       const currentPlacements = new Map(get().placements)
       currentPlacements.set(candidateId, updatedPlacement)
       set({ placements: currentPlacements })
+    },
+
+    resetPlacements: async () => {
+      const { tierlistId } = get()
+      if (!tierlistId) throw new Error('No tierlist loaded')
+
+      await apiResetPlacements(tierlistId)
+
+      const currentPlacements = get().placements
+      const updatedPlacements = new Map<string, Placement>()
+
+      currentPlacements.forEach((placement, candidateId) => {
+        updatedPlacements.set(candidateId, {
+          ...placement,
+          category_id: null,
+          sort_order: 0,
+        })
+      })
+
+      set({ placements: updatedPlacements })
     },
 
     openCandidateModal: (candidateId?: string) =>

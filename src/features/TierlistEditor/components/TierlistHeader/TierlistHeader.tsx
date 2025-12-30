@@ -5,6 +5,7 @@ import {
   selectTierlist,
   useTierlistEditorStore,
 } from '../../store/TierlistEditor.store'
+import { TierlistResetControl } from '../TierlistResetControl/TierlistResetControl'
 
 export function TierlistHeader() {
   const tierlist = useTierlistEditorStore(selectTierlist)
@@ -35,9 +36,13 @@ export function TierlistHeader() {
         <Title order={2}>{tierlist.data.title}</Title>
       </div>
 
-      <Button leftSection={<IconEdit size={18} />} onClick={openMetaModal}>
-        Edit
-      </Button>
+      <Group gap="xs">
+        <TierlistResetControl />
+
+        <Button leftSection={<IconEdit size={18} />} onClick={openMetaModal}>
+          Edit
+        </Button>
+      </Group>
     </Group>
   )
 }

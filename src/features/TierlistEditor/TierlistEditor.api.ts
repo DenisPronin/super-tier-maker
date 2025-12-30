@@ -245,3 +245,16 @@ export async function apiBulkCreateCandidates(
 
   return createdCandidates as Candidate[]
 }
+
+export async function apiResetPlacements(tierlistId: string): Promise<void> {
+  const { error } = await supabase
+    .from('tierlist_placements')
+    .update({
+      category_id: null,
+      sort_order: 0,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('tierlist_id', tierlistId)
+
+  if (error) throw new Error(error.message)
+}
