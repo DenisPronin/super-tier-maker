@@ -498,10 +498,16 @@ export const selectCandidatesInCategory =
     const candidates = state.candidates.data || []
     const placements = state.placements
 
-    return candidates.filter((candidate) => {
-      const placement = placements.get(candidate.id)
-      return placement?.category_id === categoryId
-    })
+    return candidates
+      .filter((candidate) => {
+        const placement = placements.get(candidate.id)
+        return placement?.category_id === categoryId
+      })
+      .sort((a, b) => {
+        const placementA = placements.get(a.id)
+        const placementB = placements.get(b.id)
+        return (placementA?.sort_order ?? 0) - (placementB?.sort_order ?? 0)
+      })
   }
 
 export const selectUnplacedCandidates = (state: TierlistEditorState) => {
