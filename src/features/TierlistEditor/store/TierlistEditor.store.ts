@@ -1,3 +1,4 @@
+import { supabase } from '@/app/imports/App.services'
 import {
   createAsyncAction,
   createLoadableData,
@@ -15,6 +16,7 @@ import {
   apiFetchCategories,
   apiFetchPlacements,
   apiFetchTierlist,
+  apiResetPlacements,
   apiUpdateCandidate,
   apiUpdateCategory,
   apiUpdatePlacement,
@@ -80,6 +82,11 @@ type TierlistEditorState = {
     candidateId: string,
     categoryId: string | null,
     sortOrder: number
+  ) => Promise<void>
+  resetPlacements: () => Promise<void>
+  reorderCandidatesInContainer: (
+    categoryId: string | null,
+    orderedCandidateIds: string[]
   ) => Promise<void>
 
   openCandidateModal: (candidateId?: string) => void
@@ -354,16 +361,100 @@ export const useTierlistEditorStore = createStore<TierlistEditorState>()(
       const { tierlistId } = get()
       if (!tierlistId) throw new Error('No tierlist loaded')
 
-      const updatedPlacement = await apiUpdatePlacement(
-        tierlistId,
-        candidateId,
-        categoryId,
-        sortOrder
-      )
+      const currentPlacements = new Map(get().placements)
+      const oldPlacement = currentPlacements.get(candidateId)
+
+      const optimisticPlacement = {
+        tierlist_id: tierlistId,
+        candidate_id: candidateId,
+        category_id: categoryId,
+        sort_order: sortOrder,
+        updated_at: new Date().toISOString(),
+      }
+
+      currentPlacements.set(candidateId, optimisticPlacement)
+      set({ placements: currentPlacements })
+
+      try {
+        await apiUpdatePlacement(tierlistId, candidateId, categoryId, sortOrder)
+        await get().fetchPlacements()
+      } catch (error) {
+        if (oldPlacement) {
+          const revertedPlacements = new Map(get().placements)
+          revertedPlacements.set(candidateId, oldPlacement)
+          set({ placements: revertedPlacements })
+        }
+        throw error
+      }
+    },
+
+    resetPlacements: async () => {
+      const { tierlistId } = get()
+      if (!tierlistId) throw new Error('No tierlist loaded')
+
+      await apiResetPlacements(tierlistId)
+
+      const currentPlacements = get().placements
+      const updatedPlacements = new Map<string, Placement>()
+
+      currentPlacements.forEach((placement, candidateId) => {
+        updatedPlacements.set(candidateId, {
+          ...placement,
+          category_id: null,
+          sort_order: 0,
+        })
+      })
+
+      set({ placements: updatedPlacements })
+    },
+
+    reorderCandidatesInContainer: async (
+      categoryId: string | null,
+      orderedCandidateIds: string[]
+    ) => {
+      const { tierlistId } = get()
+      if (!tierlistId) throw new Error('No tierlist loaded')
+
+      if (categoryId === null) {
+        return
+      }
 
       const currentPlacements = new Map(get().placements)
-      currentPlacements.set(candidateId, updatedPlacement)
+      const oldPlacements = new Map(currentPlacements)
+
+      orderedCandidateIds.forEach((candidateId, index) => {
+        const placement = currentPlacements.get(candidateId)
+        if (placement) {
+          currentPlacements.set(candidateId, {
+            ...placement,
+            sort_order: index,
+          })
+        }
+      })
+
       set({ placements: currentPlacements })
+
+      try {
+        const updates = orderedCandidateIds.map((candidateId, index) => ({
+          tierlist_id: tierlistId,
+          candidate_id: candidateId,
+          category_id: categoryId,
+          sort_order: index,
+        }))
+
+        const { error } = await supabase
+          .from('tierlist_placements')
+          .upsert(updates, {
+            onConflict: 'tierlist_id,candidate_id',
+          })
+
+        if (error) throw new Error(error.message)
+
+        await get().fetchPlacements()
+      } catch (error) {
+        set({ placements: oldPlacements })
+        throw error
+      }
     },
 
     openCandidateModal: (candidateId?: string) =>
@@ -449,10 +540,16 @@ export const selectCandidatesInCategory =
     const candidates = state.candidates.data || []
     const placements = state.placements
 
-    return candidates.filter((candidate) => {
-      const placement = placements.get(candidate.id)
-      return placement?.category_id === categoryId
-    })
+    return candidates
+      .filter((candidate) => {
+        const placement = placements.get(candidate.id)
+        return placement?.category_id === categoryId
+      })
+      .sort((a, b) => {
+        const placementA = placements.get(a.id)
+        const placementB = placements.get(b.id)
+        return (placementA?.sort_order ?? 0) - (placementB?.sort_order ?? 0)
+      })
   }
 
 export const selectUnplacedCandidates = (state: TierlistEditorState) => {

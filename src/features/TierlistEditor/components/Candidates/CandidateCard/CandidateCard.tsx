@@ -1,6 +1,6 @@
 import { ActionIcon, Card, Image, Stack, Text } from '@mantine/core'
 import { IconPlayerPlay } from '@tabler/icons-react'
-import { type MouseEvent, useState } from 'react'
+import { type MouseEvent, type Ref, useState } from 'react'
 import type { Candidate } from '../../../TierlistEditor.types'
 
 interface CandidateCardProps {
@@ -8,6 +8,8 @@ interface CandidateCardProps {
   size?: 'small' | 'normal'
   onClick?: (candidate: Candidate) => void
   onPlayClick?: (candidate: Candidate) => void
+  dragHandleRef?: Ref<HTMLDivElement>
+  dragHandleProps?: Record<string, unknown>
 }
 
 export function CandidateCard({
@@ -15,6 +17,8 @@ export function CandidateCard({
   size = 'normal',
   onClick,
   onPlayClick,
+  dragHandleRef,
+  dragHandleProps,
 }: CandidateCardProps) {
   const isSmall = size === 'small'
   const cardWidth = isSmall ? 100 : 120
@@ -22,7 +26,7 @@ export function CandidateCard({
 
   const [isHovered, setIsHovered] = useState(false)
 
-  const handleClick = () => {
+  const handleImageClick = () => {
     onClick?.(candidate)
   }
 
@@ -42,15 +46,16 @@ export function CandidateCard({
       w={cardWidth}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      onClick={handleClick}
       style={{
-        cursor: onClick ? 'pointer' : 'default',
         transform: isHovered ? 'scale(1.05)' : 'scale(1)',
         transition: 'transform 0.2s ease-in-out',
         position: 'relative',
       }}
     >
-      <Card.Section>
+      <Card.Section
+        onClick={handleImageClick}
+        style={{ cursor: onClick ? 'pointer' : 'default' }}
+      >
         {candidate.preview_url ? (
           <Image
             src={candidate.preview_url}
@@ -80,7 +85,13 @@ export function CandidateCard({
         )}
       </Card.Section>
 
-      <Stack gap={4} mt="xs">
+      <Stack
+        gap={4}
+        mt="xs"
+        ref={dragHandleRef}
+        style={{ cursor: dragHandleRef ? 'grab' : 'default' }}
+        {...dragHandleProps}
+      >
         <Text size="sm" fw={500} truncate lineClamp={1}>
           {candidate.title}
         </Text>

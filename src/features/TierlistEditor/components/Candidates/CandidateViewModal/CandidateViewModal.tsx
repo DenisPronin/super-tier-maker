@@ -160,7 +160,7 @@ export function CandidateViewModal() {
               <Image
                 src={candidate.preview_url}
                 alt={candidate.title}
-                width={120}
+                maw={300}
                 fit="cover"
                 radius="md"
               />
