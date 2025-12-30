@@ -361,9 +361,31 @@ export const useTierlistEditorStore = createStore<TierlistEditorState>()(
       const { tierlistId } = get()
       if (!tierlistId) throw new Error('No tierlist loaded')
 
-      await apiUpdatePlacement(tierlistId, candidateId, categoryId, sortOrder)
+      const currentPlacements = new Map(get().placements)
+      const oldPlacement = currentPlacements.get(candidateId)
 
-      await get().fetchPlacements()
+      const optimisticPlacement = {
+        tierlist_id: tierlistId,
+        candidate_id: candidateId,
+        category_id: categoryId,
+        sort_order: sortOrder,
+        updated_at: new Date().toISOString(),
+      }
+
+      currentPlacements.set(candidateId, optimisticPlacement)
+      set({ placements: currentPlacements })
+
+      try {
+        await apiUpdatePlacement(tierlistId, candidateId, categoryId, sortOrder)
+        await get().fetchPlacements()
+      } catch (error) {
+        if (oldPlacement) {
+          const revertedPlacements = new Map(get().placements)
+          revertedPlacements.set(candidateId, oldPlacement)
+          set({ placements: revertedPlacements })
+        }
+        throw error
+      }
     },
 
     resetPlacements: async () => {
@@ -397,22 +419,42 @@ export const useTierlistEditorStore = createStore<TierlistEditorState>()(
         return
       }
 
-      const updates = orderedCandidateIds.map((candidateId, index) => ({
-        tierlist_id: tierlistId,
-        candidate_id: candidateId,
-        category_id: categoryId,
-        sort_order: index,
-      }))
+      const currentPlacements = new Map(get().placements)
+      const oldPlacements = new Map(currentPlacements)
 
-      const { error } = await supabase
-        .from('tierlist_placements')
-        .upsert(updates, {
-          onConflict: 'tierlist_id,candidate_id',
-        })
+      orderedCandidateIds.forEach((candidateId, index) => {
+        const placement = currentPlacements.get(candidateId)
+        if (placement) {
+          currentPlacements.set(candidateId, {
+            ...placement,
+            sort_order: index,
+          })
+        }
+      })
 
-      if (error) throw new Error(error.message)
+      set({ placements: currentPlacements })
 
-      await get().fetchPlacements()
+      try {
+        const updates = orderedCandidateIds.map((candidateId, index) => ({
+          tierlist_id: tierlistId,
+          candidate_id: candidateId,
+          category_id: categoryId,
+          sort_order: index,
+        }))
+
+        const { error } = await supabase
+          .from('tierlist_placements')
+          .upsert(updates, {
+            onConflict: 'tierlist_id,candidate_id',
+          })
+
+        if (error) throw new Error(error.message)
+
+        await get().fetchPlacements()
+      } catch (error) {
+        set({ placements: oldPlacements })
+        throw error
+      }
     },
 
     openCandidateModal: (candidateId?: string) =>
