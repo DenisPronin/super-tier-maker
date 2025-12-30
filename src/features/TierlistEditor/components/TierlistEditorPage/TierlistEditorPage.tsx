@@ -3,8 +3,9 @@ import {
   DndContext,
   DragOverlay,
   KeyboardSensor,
+  MeasuringStrategy,
   PointerSensor,
-  pointerWithin,
+  rectIntersection,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -58,13 +59,19 @@ export function TierlistEditorPage() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 3,
       },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   )
+
+  const measuringConfig = {
+    droppable: {
+      strategy: MeasuringStrategy.WhileDragging,
+    },
+  }
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string)
@@ -191,7 +198,8 @@ export function TierlistEditorPage() {
   return (
     <DndContext
       sensors={sensors}
-      collisionDetection={pointerWithin}
+      collisionDetection={rectIntersection}
+      measuring={measuringConfig}
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDragEnd={handleDragEnd}
