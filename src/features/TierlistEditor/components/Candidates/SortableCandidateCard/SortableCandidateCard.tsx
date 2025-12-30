@@ -20,6 +20,7 @@ export function SortableCandidateCard({
     attributes,
     listeners,
     setNodeRef,
+    setActivatorNodeRef,
     transform,
     transition,
     isDragging,
@@ -29,16 +30,17 @@ export function SortableCandidateCard({
     transform: CSS.Transform.toString(transform),
     transition: transition || 'transform 200ms ease',
     opacity: isDragging ? 0.5 : 1,
-    cursor: isDragging ? 'grabbing' : 'grab',
   }
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style}>
       <CandidateCard
         candidate={candidate}
         size={size}
-        onClick={!isDragging ? onClick : undefined}
-        onPlayClick={!isDragging ? onPlayClick : undefined}
+        onClick={onClick}
+        onPlayClick={onPlayClick}
+        dragHandleRef={setActivatorNodeRef}
+        dragHandleProps={{ ...attributes, ...listeners }}
       />
     </div>
   )
