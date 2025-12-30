@@ -18,6 +18,25 @@ Language:
   - ❌ `items.filter((t) => t.id !== id)`
   - ✅ `items.filter((item) => item.id !== id)`
 
+---
+### Conditional expressions:
+- DO NOT use nested ternary operators (more than 1 level)
+- Use if-else statements for complex conditionals
+- Examples:
+  - ❌ `const x = a ? b : c ? d : e` (nested ternary)
+  - ✅ Simple ternary: `const x = a ? b : c`
+  - ✅ Use if-else for multiple conditions:
+    ```typescript
+    let x
+    if (a) {
+      x = b
+    } else if (c) {
+      x = d
+    } else {
+      x = e
+    }
+    ```
+
 Imports:
 - Import only specific items from packages.
 - DO NOT use namespace imports unless necessary.

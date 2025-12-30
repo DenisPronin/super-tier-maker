@@ -24,7 +24,6 @@ export const Content = styled(Box, {
   shouldForwardProp: (prop) => !prop.startsWith('$'),
 })<PropsWithChildren<BoxProps & { $isEmpty: boolean }>>`
   position: relative;
-  flex: 1;
   padding: 12px 16px;
   min-height: 100px;
   background-color: var(--mantine-color-dark-7);

@@ -1,3 +1,5 @@
+import { useDroppable } from '@dnd-kit/core'
+import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable'
 import { Flex } from '@mantine/core'
 import { useShallow } from 'zustand/react/shallow'
 import {
@@ -5,7 +7,7 @@ import {
   useTierlistEditorStore,
 } from '../../../store/TierlistEditor.store'
 import type { Candidate, Category } from '../../../TierlistEditor.types'
-import { CandidateCard } from '../../Candidates/CandidateCard/CandidateCard'
+import { SortableCandidateCard } from '../../Candidates/SortableCandidateCard/SortableCandidateCard'
 import { CategoryItemControls } from '../CategoryItemControls/CategoryItemControls'
 import * as Styled from './CategoryItem.styled'
 
@@ -20,6 +22,12 @@ export function CategoryItem({ category }: CategoryItemProps) {
   const openCandidateViewModal = useTierlistEditorStore(
     (state) => state.openCandidateViewModal
   )
+
+  const { setNodeRef, isOver } = useDroppable({
+    id: category.id,
+  })
+
+  const candidateIds = candidatesInCategory.map((candidate) => candidate.id)
 
   const handleCandidateClick = (candidate: Candidate) => {
     openCandidateViewModal(candidate.id)
@@ -38,33 +46,49 @@ export function CategoryItem({ category }: CategoryItemProps) {
           {category.title}
         </Styled.Label>
 
-        <Styled.Content $isEmpty={candidatesInCategory.length === 0}>
-          <div
+        <div
+          ref={setNodeRef}
+          style={{
+            flex: 1,
+          }}
+        >
+          <Styled.Content
+            $isEmpty={candidatesInCategory.length === 0}
             style={{
-              position: 'absolute',
-              top: 8,
-              right: 8,
-              zIndex: 1,
+              backgroundColor: isOver
+                ? 'var(--mantine-color-dark-6)'
+                : 'var(--mantine-color-dark-7)',
             }}
           >
-            <CategoryItemControls
-              categoryId={category.id}
-              categoryTitle={category.title}
-            />
-          </div>
-
-          <Flex wrap="wrap" gap="8px">
-            {candidatesInCategory.map((candidate) => (
-              <CandidateCard
-                key={candidate.id}
-                candidate={candidate}
-                size="small"
-                onClick={handleCandidateClick}
-                onPlayClick={handlePlayClick}
+            <div
+              style={{
+                position: 'absolute',
+                top: 8,
+                right: 8,
+                zIndex: 1,
+              }}
+            >
+              <CategoryItemControls
+                categoryId={category.id}
+                categoryTitle={category.title}
               />
-            ))}
-          </Flex>
-        </Styled.Content>
+            </div>
+
+            <SortableContext items={candidateIds} strategy={rectSortingStrategy}>
+              <Flex wrap="wrap" gap="8px">
+                {candidatesInCategory.map((candidate) => (
+                  <SortableCandidateCard
+                    key={candidate.id}
+                    candidate={candidate}
+                    size="small"
+                    onClick={handleCandidateClick}
+                    onPlayClick={handlePlayClick}
+                  />
+                ))}
+              </Flex>
+            </SortableContext>
+          </Styled.Content>
+        </div>
       </Flex>
     </Styled.Container>
   )

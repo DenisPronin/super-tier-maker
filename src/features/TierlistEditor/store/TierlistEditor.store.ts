@@ -1,3 +1,4 @@
+import { supabase } from '@/app/imports/App.services'
 import {
   createAsyncAction,
   createLoadableData,
@@ -83,6 +84,10 @@ type TierlistEditorState = {
     sortOrder: number
   ) => Promise<void>
   resetPlacements: () => Promise<void>
+  reorderCandidatesInContainer: (
+    categoryId: string | null,
+    orderedCandidateIds: string[]
+  ) => Promise<void>
 
   openCandidateModal: (candidateId?: string) => void
   closeCandidateModal: () => void
@@ -356,16 +361,9 @@ export const useTierlistEditorStore = createStore<TierlistEditorState>()(
       const { tierlistId } = get()
       if (!tierlistId) throw new Error('No tierlist loaded')
 
-      const updatedPlacement = await apiUpdatePlacement(
-        tierlistId,
-        candidateId,
-        categoryId,
-        sortOrder
-      )
+      await apiUpdatePlacement(tierlistId, candidateId, categoryId, sortOrder)
 
-      const currentPlacements = new Map(get().placements)
-      currentPlacements.set(candidateId, updatedPlacement)
-      set({ placements: currentPlacements })
+      await get().fetchPlacements()
     },
 
     resetPlacements: async () => {
@@ -386,6 +384,35 @@ export const useTierlistEditorStore = createStore<TierlistEditorState>()(
       })
 
       set({ placements: updatedPlacements })
+    },
+
+    reorderCandidatesInContainer: async (
+      categoryId: string | null,
+      orderedCandidateIds: string[]
+    ) => {
+      const { tierlistId } = get()
+      if (!tierlistId) throw new Error('No tierlist loaded')
+
+      if (categoryId === null) {
+        return
+      }
+
+      const updates = orderedCandidateIds.map((candidateId, index) => ({
+        tierlist_id: tierlistId,
+        candidate_id: candidateId,
+        category_id: categoryId,
+        sort_order: index,
+      }))
+
+      const { error } = await supabase
+        .from('tierlist_placements')
+        .upsert(updates, {
+          onConflict: 'tierlist_id,candidate_id',
+        })
+
+      if (error) throw new Error(error.message)
+
+      await get().fetchPlacements()
     },
 
     openCandidateModal: (candidateId?: string) =>

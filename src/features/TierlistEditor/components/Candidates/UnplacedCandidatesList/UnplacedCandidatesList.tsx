@@ -1,3 +1,5 @@
+import { useDroppable } from '@dnd-kit/core'
+import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable'
 import { Button, Flex, Group, Stack, Text, Title } from '@mantine/core'
 import { IconFileImport, IconPlus } from '@tabler/icons-react'
 import { useShallow } from 'zustand/react/shallow'
@@ -6,7 +8,8 @@ import {
   useTierlistEditorStore,
 } from '../../../store/TierlistEditor.store'
 import type { Candidate } from '../../../TierlistEditor.types'
-import { CandidateCard } from '../CandidateCard/CandidateCard'
+import { UNPLACED_CONTAINER_ID } from '../../../utils/dnd.helpers'
+import { SortableCandidateCard } from '../SortableCandidateCard/SortableCandidateCard'
 
 export function UnplacedCandidatesList() {
   const unplacedCandidates = useTierlistEditorStore(
@@ -21,6 +24,12 @@ export function UnplacedCandidatesList() {
   const openBulkImportModal = useTierlistEditorStore(
     (state) => state.openBulkImportModal
   )
+
+  const { setNodeRef, isOver } = useDroppable({
+    id: UNPLACED_CONTAINER_ID,
+  })
+
+  const candidateIds = unplacedCandidates.map((candidate) => candidate.id)
 
   const handleCandidateClick = (candidate: Candidate) => {
     openCandidateViewModal(candidate.id)
@@ -62,24 +71,39 @@ export function UnplacedCandidatesList() {
         </Group>
       </Group>
 
-      {unplacedCandidates.length > 0 && (
-        <Flex wrap="wrap" gap="16px">
-          {unplacedCandidates.map((candidate) => (
-            <CandidateCard
-              key={candidate.id}
-              candidate={candidate}
-              onClick={handleCandidateClick}
-              onPlayClick={handlePlayClick}
-            />
-          ))}
-        </Flex>
-      )}
+      <div
+        ref={setNodeRef}
+        style={{
+          backgroundColor: isOver
+            ? 'var(--mantine-color-gray-1)'
+            : 'transparent',
+          transition: 'background-color 0.2s',
+          borderRadius: '8px',
+          padding: unplacedCandidates.length > 0 ? '0' : '16px',
+          minHeight: '100px',
+        }}
+      >
+        {unplacedCandidates.length > 0 && (
+          <SortableContext items={candidateIds} strategy={rectSortingStrategy}>
+            <Flex wrap="wrap" gap="16px">
+              {unplacedCandidates.map((candidate) => (
+                <SortableCandidateCard
+                  key={candidate.id}
+                  candidate={candidate}
+                  onClick={handleCandidateClick}
+                  onPlayClick={handlePlayClick}
+                />
+              ))}
+            </Flex>
+          </SortableContext>
+        )}
 
-      {unplacedCandidates.length === 0 && (
-        <Text c="dimmed" ta="center" py="xl">
-          No unplaced candidates
-        </Text>
-      )}
+        {unplacedCandidates.length === 0 && (
+          <Text c="dimmed" ta="center" py="xl">
+            No unplaced candidates
+          </Text>
+        )}
+      </div>
     </Stack>
   )
 }
