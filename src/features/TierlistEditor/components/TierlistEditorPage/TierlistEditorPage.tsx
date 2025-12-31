@@ -221,7 +221,7 @@ export function TierlistEditorPage({ viewMode = false }: TierlistEditorPageProps
             <CandidateBulkImportModal />
           </>
         )}
-        <CandidateViewModal />
+        <CandidateViewModal viewMode={viewMode} />
       </Box>
 
       <DragOverlay>

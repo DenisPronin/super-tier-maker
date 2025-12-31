@@ -7,6 +7,7 @@ import {
   Group,
   Image,
   Modal,
+  NumberInput,
   Select,
   Stack,
   Text,
@@ -21,8 +22,18 @@ import {
   selectViewingCandidateId,
   useTierlistEditorStore,
 } from '../../../store/TierlistEditor.store'
+import {
+  findCategoryIndexByScore,
+  SCORE_CONFIG,
+} from '../../../utils/score-intervals'
 
-export function CandidateViewModal() {
+interface CandidateViewModalProps {
+  viewMode?: boolean
+}
+
+export function CandidateViewModal({
+  viewMode = false,
+}: CandidateViewModalProps) {
   const isOpen = useTierlistEditorStore(selectIsCandidateViewModalOpen)
   const viewingCandidateId = useTierlistEditorStore(selectViewingCandidateId)
   const candidates = useTierlistEditorStore(selectCandidates)
@@ -44,6 +55,7 @@ export function CandidateViewModal() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [score, setScore] = useState<number | string>('')
 
   const candidate =
     (candidates.data || []).find((cand) => cand.id === viewingCandidateId) ||
@@ -55,6 +67,7 @@ export function CandidateViewModal() {
   useEffect(() => {
     if (isOpen && candidate) {
       setSelectedCategory(currentCategoryId)
+      setScore('')
     }
   }, [isOpen, candidate, currentCategoryId])
 
@@ -117,6 +130,23 @@ export function CandidateViewModal() {
   const handlePlayClick = () => {
     if (candidate?.url) {
       window.open(candidate.url, '_blank', 'noopener,noreferrer')
+    }
+  }
+
+  const handleScoreChange = (value: string | number) => {
+    setScore(value)
+
+    if (typeof value === 'number' && !isNaN(value)) {
+      const categoriesCount = categories.data?.length || 0
+      const categoryIndex = findCategoryIndexByScore(value, categoriesCount)
+
+      if (
+        categoryIndex !== null &&
+        categories.data &&
+        categories.data[categoryIndex]
+      ) {
+        setSelectedCategory(categories.data[categoryIndex].id)
+      }
     }
   }
 
@@ -201,6 +231,7 @@ export function CandidateViewModal() {
               value={selectedCategory}
               onChange={setSelectedCategory}
               renderOption={renderOption}
+              mb={viewMode ? 'md' : undefined}
               styles={{
                 label: {
                   marginBottom: '8px',
@@ -219,30 +250,50 @@ export function CandidateViewModal() {
                 ) : null
               }
             />
+
+            {viewMode && (
+              <NumberInput
+                label={`Score (${SCORE_CONFIG.peopleCount} people, ${SCORE_CONFIG.minRating}-${SCORE_CONFIG.maxRating} rating)`}
+                placeholder={`${SCORE_CONFIG.min}-${SCORE_CONFIG.max}`}
+                value={score}
+                onChange={handleScoreChange}
+                min={SCORE_CONFIG.min}
+                max={SCORE_CONFIG.max}
+                styles={{
+                  label: {
+                    marginBottom: '8px',
+                  },
+                }}
+              />
+            )}
           </Box>
         </Flex>
 
         <Group justify="flex-end" mt="md">
-          <Button
-            leftSection={<IconEdit size={18} />}
-            onClick={handleEdit}
-            variant="light"
-            size="sm"
-          >
-            Edit
-          </Button>
+          {!viewMode && (
+            <>
+              <Button
+                leftSection={<IconEdit size={18} />}
+                onClick={handleEdit}
+                variant="light"
+                size="sm"
+              >
+                Edit
+              </Button>
 
-          <Button
-            leftSection={<IconTrash size={18} />}
-            onClick={handleDeleteClick}
-            color="red"
-            variant="light"
-            size="sm"
-          >
-            Delete
-          </Button>
+              <Button
+                leftSection={<IconTrash size={18} />}
+                onClick={handleDeleteClick}
+                color="red"
+                variant="light"
+                size="sm"
+              >
+                Delete
+              </Button>
 
-          <Box flex={1} />
+              <Box flex={1} />
+            </>
+          )}
 
           <Button
             variant="filled"
