@@ -3,6 +3,7 @@ import {
   selectTierlist,
   useTierlistEditorStore,
 } from '../../store/TierlistEditor.store'
+import './TierlistPlayHeader.css'
 
 export function TierlistPlayHeader() {
   const tierlist = useTierlistEditorStore(selectTierlist)
@@ -46,6 +47,7 @@ export function TierlistPlayHeader() {
       align="center"
       gap="sm"
       h="80px"
+      mt="lg"
       style={{ overflow: 'hidden' }}
     >
       <Flex gap="sm" style={{ overflow: 'hidden', flexShrink: 1 }}>
@@ -55,12 +57,16 @@ export function TierlistPlayHeader() {
       <Text
         size="xl"
         style={{
-          fontSize: '3rem',
+          fontSize: '4rem',
           whiteSpace: 'nowrap',
           flexShrink: 0,
-          fontWeight: 700,
+          fontFamily: 'PWChristmas, sans-serif',
           marginLeft: '16px',
           marginRight: '16px',
+          background: 'linear-gradient(90deg, #e11d48, #16a34a)',
+          WebkitBackgroundClip: 'text',
+          WebkitTextFillColor: 'transparent',
+          backgroundClip: 'text',
         }}
       >
         {tierlist.data?.title}
