@@ -6,11 +6,5 @@ export const tierlistRouter: IRouter = {
     path: 'app',
     element: LayoutMain,
   },
-  routes: [
-    {
-      path: 'tierlist/:id/play',
-      element: () => <div>Play Mode (TODO)</div>,
-      private: true,
-    },
-  ],
+  routes: [],
 }

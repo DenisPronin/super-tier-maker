@@ -6,7 +6,11 @@ import {
 } from '../../../store/TierlistEditor.store'
 import { CategoryItem } from '../CategoryItem/CategoryItem'
 
-export function CategoryList() {
+interface CategoryListProps {
+  viewMode?: boolean
+}
+
+export function CategoryList({ viewMode = false }: CategoryListProps) {
   const categories = useTierlistEditorStore(selectCategories)
   const openCategoryModal = useTierlistEditorStore(
     (state) => state.openCategoryModal
@@ -21,16 +25,18 @@ export function CategoryList() {
 
   return (
     <Stack gap="lg">
-      <Group justify="space-between" align="center">
-        <Title order={4}>Categories</Title>
-        <Button
-          leftSection={<IconPlus size={18} />}
-          onClick={handleAddCategory}
-          variant="light"
-        >
-          Add Category
-        </Button>
-      </Group>
+      {!viewMode && (
+        <Group justify="space-between" align="center">
+          <Title order={4}>Categories</Title>
+          <Button
+            leftSection={<IconPlus size={18} />}
+            onClick={handleAddCategory}
+            variant="light"
+          >
+            Add Category
+          </Button>
+        </Group>
+      )}
 
       {isEmpty && (
         <Text c="dimmed" ta="center" py="xl">
@@ -41,7 +47,11 @@ export function CategoryList() {
       {!isEmpty && (
         <Stack gap="md">
           {categoriesData.map((category) => (
-            <CategoryItem key={category.id} category={category} />
+            <CategoryItem
+              key={category.id}
+              category={category}
+              viewMode={viewMode}
+            />
           ))}
         </Stack>
       )}

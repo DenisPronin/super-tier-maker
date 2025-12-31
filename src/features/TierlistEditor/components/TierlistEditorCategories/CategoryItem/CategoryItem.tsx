@@ -13,9 +13,10 @@ import * as Styled from './CategoryItem.styled'
 
 interface CategoryItemProps {
   category: Category
+  viewMode?: boolean
 }
 
-export function CategoryItem({ category }: CategoryItemProps) {
+export function CategoryItem({ category, viewMode = false }: CategoryItemProps) {
   const candidatesInCategory = useTierlistEditorStore(
     useShallow(selectCandidatesInCategory(category.id))
   )
@@ -60,19 +61,21 @@ export function CategoryItem({ category }: CategoryItemProps) {
                 : 'var(--mantine-color-dark-7)',
             }}
           >
-            <div
-              style={{
-                position: 'absolute',
-                top: 8,
-                right: 8,
-                zIndex: 1,
-              }}
-            >
-              <CategoryItemControls
-                categoryId={category.id}
-                categoryTitle={category.title}
-              />
-            </div>
+            {!viewMode && (
+              <div
+                style={{
+                  position: 'absolute',
+                  top: 8,
+                  right: 8,
+                  zIndex: 1,
+                }}
+              >
+                <CategoryItemControls
+                  categoryId={category.id}
+                  categoryTitle={category.title}
+                />
+              </div>
+            )}
 
             <SortableContext items={candidateIds} strategy={rectSortingStrategy}>
               <Flex wrap="wrap" gap="8px">

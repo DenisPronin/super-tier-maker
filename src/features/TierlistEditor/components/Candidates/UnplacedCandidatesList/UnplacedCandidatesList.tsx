@@ -11,7 +11,11 @@ import type { Candidate } from '../../../TierlistEditor.types'
 import { UNPLACED_CONTAINER_ID } from '../../../utils/dnd.helpers'
 import { SortableCandidateCard } from '../SortableCandidateCard/SortableCandidateCard'
 
-export function UnplacedCandidatesList() {
+interface UnplacedCandidatesListProps {
+  viewMode?: boolean
+}
+
+export function UnplacedCandidatesList({ viewMode = false }: UnplacedCandidatesListProps) {
   const unplacedCandidates = useTierlistEditorStore(
     useShallow(selectUnplacedCandidates)
   )
@@ -51,24 +55,26 @@ export function UnplacedCandidatesList() {
           </Text>
         </Group>
 
-        <Group gap="xs">
-          <Button
-            leftSection={<IconFileImport size={18} />}
-            onClick={() => openBulkImportModal()}
-            size="sm"
-            variant="light"
-          >
-            Import JSON
-          </Button>
+        {!viewMode && (
+          <Group gap="xs">
+            <Button
+              leftSection={<IconFileImport size={18} />}
+              onClick={() => openBulkImportModal()}
+              size="sm"
+              variant="light"
+            >
+              Import JSON
+            </Button>
 
-          <Button
-            leftSection={<IconPlus size={18} />}
-            onClick={() => openCandidateModal()}
-            size="sm"
-          >
-            Add Candidate
-          </Button>
-        </Group>
+            <Button
+              leftSection={<IconPlus size={18} />}
+              onClick={() => openCandidateModal()}
+              size="sm"
+            >
+              Add Candidate
+            </Button>
+          </Group>
+        )}
       </Group>
 
       <div
