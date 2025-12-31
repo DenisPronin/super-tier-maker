@@ -85,7 +85,7 @@ export function UnplacedCandidatesList({
           </Text>
         </Group>
 
-        {viewMode ? (
+        {viewMode && (
           <Group gap="xs">
             {sortBy === 'random' && (
               <ActionIcon
@@ -104,7 +104,9 @@ export function UnplacedCandidatesList({
               w={200}
             />
           </Group>
-        ) : (
+        )}
+
+        {!viewMode && (
           <Group gap="xs">
             <Button
               leftSection={<IconFileImport size={18} />}
