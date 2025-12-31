@@ -52,6 +52,7 @@ export function AppRouter() {
           })}
         </Route>
 
+        <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
