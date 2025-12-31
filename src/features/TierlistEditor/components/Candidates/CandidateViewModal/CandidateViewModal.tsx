@@ -176,8 +176,8 @@ export function CandidateViewModal({
           <Stack gap={0}>
             <Text>{candidate.title}</Text>
             <Text size="xs" c="dimmed">
-              {candidate.comment && `${candidate.comment}, `}
-              {candidate.year}
+              {candidate.comment && `${candidate.comment}`}
+              {/*{candidate.year}*/}
             </Text>
           </Stack>
         }
