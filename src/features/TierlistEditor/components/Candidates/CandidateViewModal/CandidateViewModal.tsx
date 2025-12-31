@@ -154,7 +154,7 @@ export function CandidateViewModal({
     if (!candidate || selectedCategory === null) return
 
     try {
-      await updatePlacement(candidate.id, selectedCategory, 0)
+      updatePlacement(candidate.id, selectedCategory, 0)
       closeViewModal()
     } catch (error) {
       console.error('Failed to update placement:', error)
