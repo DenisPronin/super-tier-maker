@@ -46,6 +46,7 @@ export function TierlistPlayHeader() {
       align="center"
       gap="sm"
       h="80px"
+      mt="lg"
       style={{ overflow: 'hidden' }}
     >
       <Flex gap="sm" style={{ overflow: 'hidden', flexShrink: 1 }}>

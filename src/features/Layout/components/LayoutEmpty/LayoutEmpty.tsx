@@ -5,6 +5,8 @@ import Snowfall from 'react-snowfall'
 export function LayoutEmpty() {
   return (
     <AppShell padding="md">
+      {/* @ts-expect-error web component */}
+      <christmas-lights></christmas-lights>
       <Snowfall
         snowflakeCount={200}
         speed={[0.5, 1.0]}
