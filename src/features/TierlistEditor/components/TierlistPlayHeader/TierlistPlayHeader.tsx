@@ -21,7 +21,7 @@ export function TierlistPlayHeader() {
   const rightImages = [
     '/scrubs.gif',
     '/lily.gif',
-    '/sherlock.gif',
+    '/omens.gif',
     '/bazinga2.gif',
     '/shelby.gif',
     '/billy.gif',
