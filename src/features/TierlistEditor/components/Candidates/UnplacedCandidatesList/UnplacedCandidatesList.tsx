@@ -11,31 +11,23 @@ import {
   Title,
 } from '@mantine/core'
 import { IconFileImport, IconPlus, IconRefresh } from '@tabler/icons-react'
-import { useEffect, useMemo, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
+import {
+  sortOptions,
+  usePlayModeCandidateSort,
+} from '../../../hooks/usePlayModeCandidateSort'
 import {
   selectUnplacedCandidates,
   useTierlistEditorStore,
 } from '../../../store/TierlistEditor.store'
 import type { Candidate } from '../../../TierlistEditor.types'
 import { UNPLACED_CONTAINER_ID } from '../../../utils/dnd.helpers'
-import { generateSeed, shuffleWithSeed } from '../../../utils/seeded-random'
 import { SortableCandidateCard } from '../SortableCandidateCard/SortableCandidateCard'
-
-type SortOption = 'name-asc' | 'name-desc' | 'year-asc' | 'year-desc' | 'random'
 
 interface UnplacedCandidatesListProps {
   viewMode?: boolean
 }
-
-const sortOptions = [
-  { value: 'name-asc', label: 'По имени (А-Я)' },
-  { value: 'name-desc', label: 'По имени (Я-А)' },
-  { value: 'year-asc', label: 'По году (старые)' },
-  { value: 'year-desc', label: 'По году (новые)' },
-  { value: 'random', label: 'Случайно' },
-]
 
 export function UnplacedCandidatesList({
   viewMode = false,
@@ -54,62 +46,16 @@ export function UnplacedCandidatesList({
     (state) => state.openBulkImportModal
   )
 
-  const [sortBy, setSortBy] = useState<SortOption>('name-asc')
-  const [randomSeed, setRandomSeed] = useState<number>(generateSeed())
-
-  useEffect(() => {
-    if (!tierlistId || !viewMode) return
-
-    const storageKey = `tierlist-${tierlistId}-playmode-sort`
-    const saved = localStorage.getItem(storageKey)
-
-    if (saved) {
-      try {
-        const { sortBy: savedSort, seed } = JSON.parse(saved)
-        setSortBy(savedSort)
-        if (seed) setRandomSeed(seed)
-      } catch {
-        // ignore
-      }
-    }
-  }, [tierlistId, viewMode])
-
-  useEffect(() => {
-    if (!tierlistId || !viewMode) return
-
-    const storageKey = `tierlist-${tierlistId}-playmode-sort`
-    localStorage.setItem(
-      storageKey,
-      JSON.stringify({ sortBy, seed: randomSeed })
-    )
-  }, [tierlistId, sortBy, randomSeed, viewMode])
-
-  const sortedCandidates = useMemo(() => {
-    const candidates = [...unplacedCandidates]
-
-    switch (sortBy) {
-      case 'name-asc':
-        return candidates.sort((a, b) => a.title.localeCompare(b.title))
-      case 'name-desc':
-        return candidates.sort((a, b) => b.title.localeCompare(a.title))
-      case 'year-asc':
-        return candidates.sort((a, b) => {
-          const yearA = a.year || 0
-          const yearB = b.year || 0
-          return yearA - yearB
-        })
-      case 'year-desc':
-        return candidates.sort((a, b) => {
-          const yearA = a.year || 0
-          const yearB = b.year || 0
-          return yearB - yearA
-        })
-      case 'random':
-        return shuffleWithSeed(candidates, randomSeed)
-      default:
-        return candidates
-    }
-  }, [unplacedCandidates, sortBy, randomSeed])
+  const {
+    sortedCandidates,
+    sortBy,
+    handleSortChange,
+    handleRegenerateRandom,
+  } = usePlayModeCandidateSort({
+    candidates: unplacedCandidates,
+    tierlistId,
+    enabled: viewMode,
+  })
 
   const displayCandidates = viewMode ? sortedCandidates : unplacedCandidates
 
@@ -127,19 +73,6 @@ export function UnplacedCandidatesList({
     if (candidate.url) {
       window.open(candidate.url, '_blank', 'noopener,noreferrer')
     }
-  }
-
-  const handleSortChange = (value: string | null) => {
-    if (value) {
-      setSortBy(value as SortOption)
-      if (value === 'random' && sortBy !== 'random') {
-        setRandomSeed(generateSeed())
-      }
-    }
-  }
-
-  const handleRegenerateRandom = () => {
-    setRandomSeed(generateSeed())
   }
 
   return (
