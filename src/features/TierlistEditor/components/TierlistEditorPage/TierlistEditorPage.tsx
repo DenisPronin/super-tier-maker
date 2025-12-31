@@ -36,8 +36,13 @@ import { CategoryList } from '../TierlistEditorCategories/CategoryList/CategoryL
 import { CategoryModal } from '../TierlistEditorCategories/CategoryModal/CategoryModal'
 import { TierlistHeader } from '../TierlistHeader/TierlistHeader'
 import { TierlistMetaModal } from '../TierlistMetaModal/TierlistMetaModal'
+import { TierlistPlayHeader } from '../TierlistPlayHeader/TierlistPlayHeader'
 
-export function TierlistEditorPage() {
+interface TierlistEditorPageProps {
+  viewMode?: boolean
+}
+
+export function TierlistEditorPage({ viewMode = false }: TierlistEditorPageProps) {
   const { id } = useParams<{ id: string }>()
   const tierlist = useTierlistEditorStore(selectTierlist)
   const candidates = useTierlistEditorStore(selectCandidates)
@@ -201,18 +206,22 @@ export function TierlistEditorPage() {
     >
       <Box p="md">
         <Stack gap="lg">
-          <TierlistHeader />
+          {viewMode ? <TierlistPlayHeader /> : <TierlistHeader />}
 
-          <CategoryList />
+          <CategoryList viewMode={viewMode} />
 
-          <UnplacedCandidatesList />
+          <UnplacedCandidatesList viewMode={viewMode} />
         </Stack>
 
-        <TierlistMetaModal />
-        <CategoryModal />
-        <CandidateModal />
-        <CandidateViewModal />
-        <CandidateBulkImportModal />
+        {!viewMode && (
+          <>
+            <TierlistMetaModal />
+            <CategoryModal />
+            <CandidateModal />
+            <CandidateBulkImportModal />
+          </>
+        )}
+        <CandidateViewModal viewMode={viewMode} />
       </Box>
 
       <DragOverlay>

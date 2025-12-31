@@ -5,6 +5,7 @@ export { AuthUserMenu } from '@/features/Auth/components/AuthUserMenu/AuthUserMe
 
 // Layout
 export { LayoutMain } from '@/features/Layout/components/LayoutMain/LayoutMain'
+export { LayoutEmpty } from '@/features/Layout/components/LayoutEmpty/LayoutEmpty'
 
 // Tierlist
 export { TierlistList } from '@/features/Tierlist/components/TierlistList/TierlistList'

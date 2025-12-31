@@ -1,8 +1,22 @@
 import { useDroppable } from '@dnd-kit/core'
 import { SortableContext, rectSortingStrategy } from '@dnd-kit/sortable'
-import { Button, Flex, Group, Stack, Text, Title } from '@mantine/core'
-import { IconFileImport, IconPlus } from '@tabler/icons-react'
+import {
+  ActionIcon,
+  Button,
+  Flex,
+  Group,
+  Select,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core'
+import { IconFileImport, IconPlus, IconRefresh } from '@tabler/icons-react'
+import { useParams } from 'react-router-dom'
 import { useShallow } from 'zustand/react/shallow'
+import {
+  sortOptions,
+  usePlayModeCandidateSort,
+} from '../../../hooks/usePlayModeCandidateSort'
 import {
   selectUnplacedCandidates,
   useTierlistEditorStore,
@@ -11,7 +25,14 @@ import type { Candidate } from '../../../TierlistEditor.types'
 import { UNPLACED_CONTAINER_ID } from '../../../utils/dnd.helpers'
 import { SortableCandidateCard } from '../SortableCandidateCard/SortableCandidateCard'
 
-export function UnplacedCandidatesList() {
+interface UnplacedCandidatesListProps {
+  viewMode?: boolean
+}
+
+export function UnplacedCandidatesList({
+  viewMode = false,
+}: UnplacedCandidatesListProps) {
+  const { id: tierlistId } = useParams<{ id: string }>()
   const unplacedCandidates = useTierlistEditorStore(
     useShallow(selectUnplacedCandidates)
   )
@@ -25,11 +46,24 @@ export function UnplacedCandidatesList() {
     (state) => state.openBulkImportModal
   )
 
+  const {
+    sortedCandidates,
+    sortBy,
+    handleSortChange,
+    handleRegenerateRandom,
+  } = usePlayModeCandidateSort({
+    candidates: unplacedCandidates,
+    tierlistId,
+    enabled: viewMode,
+  })
+
+  const displayCandidates = viewMode ? sortedCandidates : unplacedCandidates
+
   const { setNodeRef, isOver } = useDroppable({
     id: UNPLACED_CONTAINER_ID,
   })
 
-  const candidateIds = unplacedCandidates.map((candidate) => candidate.id)
+  const candidateIds = displayCandidates.map((candidate) => candidate.id)
 
   const handleCandidateClick = (candidate: Candidate) => {
     openCandidateViewModal(candidate.id)
@@ -47,28 +81,51 @@ export function UnplacedCandidatesList() {
         <Group gap="xs">
           <Title order={4}>Candidates</Title>
           <Text size="sm" c="dimmed">
-            ({unplacedCandidates.length})
+            ({displayCandidates.length})
           </Text>
         </Group>
 
-        <Group gap="xs">
-          <Button
-            leftSection={<IconFileImport size={18} />}
-            onClick={() => openBulkImportModal()}
-            size="sm"
-            variant="light"
-          >
-            Import JSON
-          </Button>
+        {viewMode && (
+          <Group gap="xs">
+            {sortBy === 'random' && (
+              <ActionIcon
+                variant="light"
+                size="lg"
+                onClick={handleRegenerateRandom}
+              >
+                <IconRefresh size={18} />
+              </ActionIcon>
+            )}
+            <Select
+              data={sortOptions}
+              value={sortBy}
+              onChange={handleSortChange}
+              size="sm"
+              w={200}
+            />
+          </Group>
+        )}
 
-          <Button
-            leftSection={<IconPlus size={18} />}
-            onClick={() => openCandidateModal()}
-            size="sm"
-          >
-            Add Candidate
-          </Button>
-        </Group>
+        {!viewMode && (
+          <Group gap="xs">
+            <Button
+              leftSection={<IconFileImport size={18} />}
+              onClick={() => openBulkImportModal()}
+              size="sm"
+              variant="light"
+            >
+              Import JSON
+            </Button>
+
+            <Button
+              leftSection={<IconPlus size={18} />}
+              onClick={() => openCandidateModal()}
+              size="sm"
+            >
+              Add Candidate
+            </Button>
+          </Group>
+        )}
       </Group>
 
       <div
@@ -79,14 +136,14 @@ export function UnplacedCandidatesList() {
             : 'transparent',
           transition: 'background-color 0.2s',
           borderRadius: '8px',
-          padding: unplacedCandidates.length > 0 ? '0' : '16px',
+          padding: displayCandidates.length > 0 ? '0' : '16px',
           minHeight: '100px',
         }}
       >
-        {unplacedCandidates.length > 0 && (
+        {displayCandidates.length > 0 && (
           <SortableContext items={candidateIds} strategy={rectSortingStrategy}>
             <Flex wrap="wrap" gap="16px">
-              {unplacedCandidates.map((candidate) => (
+              {displayCandidates.map((candidate) => (
                 <SortableCandidateCard
                   key={candidate.id}
                   candidate={candidate}
@@ -98,7 +155,7 @@ export function UnplacedCandidatesList() {
           </SortableContext>
         )}
 
-        {unplacedCandidates.length === 0 && (
+        {displayCandidates.length === 0 && (
           <Text c="dimmed" ta="center" py="xl">
             No unplaced candidates
           </Text>
