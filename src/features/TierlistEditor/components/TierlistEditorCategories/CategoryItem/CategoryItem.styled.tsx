@@ -27,7 +27,5 @@ export const Content = styled(Box, {
   padding: 12px 16px;
   min-height: 100px;
   background-color: var(--mantine-color-dark-7);
-  border: ${(props) =>
-    props.$isEmpty ? '2px dashed var(--mantine-color-dark-4)' : 'none'};
   transition: background-color 0.2s ease;
 `
