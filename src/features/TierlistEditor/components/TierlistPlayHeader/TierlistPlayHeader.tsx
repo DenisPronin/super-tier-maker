@@ -11,21 +11,21 @@ export function TierlistPlayHeader() {
     '/alf.gif',
     '/brooklyn.gif',
     '/sabrina.gif',
-    '/danger.gif',
-    '/danger.gif',
-    '/danger.gif',
-    '/danger.gif',
-    '/danger.gif',
+    '/joe.gif',
+    '/turkey.gif',
+    '/khaleesi.gif',
+    '/super.gif',
+    '/office.gif',
   ]
 
   const rightImages = [
-    '/danger.gif',
-    '/danger.gif',
-    '/danger.gif',
-    '/danger.gif',
-    '/danger.gif',
-    '/danger.gif',
-    '/danger.gif',
+    '/scrubs.gif',
+    '/lily.gif',
+    '/sherlock.gif',
+    '/bazinga2.gif',
+    '/shelby.gif',
+    '/billy.gif',
+    '/lasso.gif',
     '/danger.gif',
   ]
 
@@ -34,7 +34,7 @@ export function TierlistPlayHeader() {
       <Image
         key={`${src}-${index}`}
         src={src}
-        height={60}
+        height={80}
         fit="contain"
         style={{ width: 'auto' }}
       />
@@ -47,8 +47,6 @@ export function TierlistPlayHeader() {
       gap="sm"
       h="80px"
       style={{ overflow: 'hidden' }}
-      mb="md"
-      mt="md"
     >
       <Flex gap="sm" style={{ overflow: 'hidden', flexShrink: 1 }}>
         {renderImages(leftImages)}
