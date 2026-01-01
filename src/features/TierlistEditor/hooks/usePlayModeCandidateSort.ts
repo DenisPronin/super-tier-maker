@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Candidate } from '../TierlistEditor.types'
-import { generateSeed, shuffleWithSeed } from '../utils/seeded-random'
 
 type SortOption = 'name-asc' | 'name-desc' | 'year-asc' | 'year-desc' | 'random'
 
@@ -18,13 +17,22 @@ interface UsePlayModeCandidateSortProps {
   enabled: boolean
 }
 
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1))
+    ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
 export function usePlayModeCandidateSort({
   candidates,
   tierlistId,
   enabled,
 }: UsePlayModeCandidateSortProps) {
   const [sortBy, setSortBy] = useState<SortOption>('name-asc')
-  const [randomSeed, setRandomSeed] = useState<number>(generateSeed())
+  const [randomOrder, setRandomOrder] = useState<string[]>([])
 
   useEffect(() => {
     if (!tierlistId || !enabled) return
@@ -34,9 +42,9 @@ export function usePlayModeCandidateSort({
 
     if (saved) {
       try {
-        const { sortBy: savedSort, seed } = JSON.parse(saved)
+        const { sortBy: savedSort, randomOrder: savedOrder } = JSON.parse(saved)
         setSortBy(savedSort)
-        if (seed) setRandomSeed(seed)
+        if (savedOrder) setRandomOrder(savedOrder)
       } catch {
         // ignore
       }
@@ -49,9 +57,9 @@ export function usePlayModeCandidateSort({
     const storageKey = `tierlist-${tierlistId}-playmode-sort`
     localStorage.setItem(
       storageKey,
-      JSON.stringify({ sortBy, seed: randomSeed })
+      JSON.stringify({ sortBy, randomOrder })
     )
-  }, [tierlistId, sortBy, randomSeed, enabled])
+  }, [tierlistId, sortBy, randomOrder, enabled])
 
   const sortedCandidates = useMemo(() => {
     const sorted = [...candidates]
@@ -73,24 +81,39 @@ export function usePlayModeCandidateSort({
           const yearB = b.year || 0
           return yearB - yearA
         })
-      case 'random':
-        return shuffleWithSeed(sorted, randomSeed)
+      case 'random': {
+        const candidateIds = candidates.map((c) => c.id)
+
+        const validOrder = randomOrder.filter((id) =>
+          candidateIds.includes(id)
+        )
+
+        const newIds = candidateIds.filter((id) => !validOrder.includes(id))
+
+        const finalOrder = [...validOrder, ...newIds]
+
+        return sorted.sort(
+          (a, b) => finalOrder.indexOf(a.id) - finalOrder.indexOf(b.id)
+        )
+      }
       default:
         return sorted
     }
-  }, [candidates, sortBy, randomSeed])
+  }, [candidates, sortBy, randomOrder])
 
   const handleSortChange = (value: string | null) => {
     if (value) {
       setSortBy(value as SortOption)
       if (value === 'random' && sortBy !== 'random') {
-        setRandomSeed(generateSeed())
+        const candidateIds = candidates.map((c) => c.id)
+        setRandomOrder(shuffleArray(candidateIds))
       }
     }
   }
 
   const handleRegenerateRandom = () => {
-    setRandomSeed(generateSeed())
+    const candidateIds = candidates.map((c) => c.id)
+    setRandomOrder(shuffleArray(candidateIds))
   }
 
   return {
