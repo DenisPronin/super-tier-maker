@@ -1,4 +1,6 @@
+import { isDecember } from '@/utils/date'
 import { Flex, Image, Text } from '@mantine/core'
+import { useMemo } from 'react'
 import {
   selectTierlist,
   useTierlistEditorStore,
@@ -7,27 +9,61 @@ import './TierlistPlayHeader.css'
 
 export function TierlistPlayHeader() {
   const tierlist = useTierlistEditorStore(selectTierlist)
+  const december = isDecember()
+
+  const titleStyle = useMemo(() => {
+    if (december) {
+      return {
+        fontFamily: 'PWChristmas, sans-serif',
+        background: 'linear-gradient(90deg, #e11d48, #16a34a)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
+      }
+    }
+
+    return {
+      fontFamily: 'LolBold, sans-serif',
+      background:
+        'linear-gradient(180deg, #F0E6B2 0%, #C8AA6E 45%, #785A28 100%)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+      backgroundClip: 'text',
+      WebkitTextStroke: '1px #1C1004',
+      filter: 'drop-shadow(0px 3px 6px rgba(0, 0, 0, 0.8))',
+    }
+  }, [december])
 
   const leftImages = [
-    '/alf.gif',
-    '/brooklyn.gif',
-    '/sabrina.gif',
-    '/joe.gif',
-    '/turkey.gif',
-    '/khaleesi.gif',
-    '/super.gif',
-    '/office.gif',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
   ]
 
   const rightImages = [
-    '/scrubs.gif',
-    '/lily.gif',
-    '/omens.gif',
-    '/bazinga2.gif',
-    '/shelby.gif',
-    '/billy.gif',
-    '/lasso.gif',
-    '/danger.gif',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
+    '/lol/teemo.webp',
   ]
 
   const renderImages = (images: string[]) =>
@@ -60,13 +96,9 @@ export function TierlistPlayHeader() {
           fontSize: '4rem',
           whiteSpace: 'nowrap',
           flexShrink: 0,
-          fontFamily: 'PWChristmas, sans-serif',
           marginLeft: '16px',
           marginRight: '16px',
-          background: 'linear-gradient(90deg, #e11d48, #16a34a)',
-          WebkitBackgroundClip: 'text',
-          WebkitTextFillColor: 'transparent',
-          backgroundClip: 'text',
+          ...titleStyle,
         }}
       >
         {tierlist.data?.title}

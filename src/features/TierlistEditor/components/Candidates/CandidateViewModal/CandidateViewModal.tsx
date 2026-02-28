@@ -1,3 +1,4 @@
+import { usePeopleCount } from '@/utils/usePeopleCount'
 import {
   ActionIcon,
   Box,
@@ -24,7 +25,7 @@ import {
 } from '../../../store/TierlistEditor.store'
 import {
   findCategoryIndexByScore,
-  SCORE_CONFIG,
+  getScoreConfig,
 } from '../../../utils/score-intervals'
 
 interface CandidateViewModalProps {
@@ -52,10 +53,14 @@ export function CandidateViewModal({
     (state) => state.updatePlacement
   )
 
+  const { peopleCount, updatePeopleCount } = usePeopleCount()
+
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
   const [score, setScore] = useState<number | string>('')
+
+  const scoreConfig = getScoreConfig(peopleCount)
 
   const candidate =
     (candidates.data || []).find((cand) => cand.id === viewingCandidateId) ||
@@ -133,12 +138,20 @@ export function CandidateViewModal({
     }
   }
 
+  const handlePeopleCountChange = (value: string | number) => {
+    if (typeof value === 'number') updatePeopleCount(value)
+  }
+
   const handleScoreChange = (value: string | number) => {
     setScore(value)
 
     if (typeof value === 'number' && !isNaN(value)) {
       const categoriesCount = categories.data?.length || 0
-      const categoryIndex = findCategoryIndexByScore(value, categoriesCount)
+      const categoryIndex = findCategoryIndexByScore(
+        value,
+        categoriesCount,
+        peopleCount
+      )
 
       if (
         categoryIndex !== null &&
@@ -252,19 +265,25 @@ export function CandidateViewModal({
             />
 
             {viewMode && (
-              <NumberInput
-                label={`Score (${SCORE_CONFIG.peopleCount} people, ${SCORE_CONFIG.minRating}-${SCORE_CONFIG.maxRating} rating)`}
-                placeholder={`${SCORE_CONFIG.min}-${SCORE_CONFIG.max}`}
-                value={score}
-                onChange={handleScoreChange}
-                min={SCORE_CONFIG.min}
-                max={SCORE_CONFIG.max}
-                styles={{
-                  label: {
-                    marginBottom: '8px',
-                  },
-                }}
-              />
+              <>
+                <NumberInput
+                  label="People count"
+                  value={peopleCount}
+                  onChange={handlePeopleCountChange}
+                  min={1}
+                  mb="md"
+                  styles={{ label: { marginBottom: '8px' } }}
+                />
+                <NumberInput
+                  label={`Score (${scoreConfig.peopleCount} people, ${scoreConfig.minRating}-${scoreConfig.maxRating} rating)`}
+                  placeholder={`${scoreConfig.min}-${scoreConfig.max}`}
+                  value={score}
+                  onChange={handleScoreChange}
+                  min={scoreConfig.min}
+                  max={scoreConfig.max}
+                  styles={{ label: { marginBottom: '8px' } }}
+                />
+              </>
             )}
           </Box>
         </Flex>
