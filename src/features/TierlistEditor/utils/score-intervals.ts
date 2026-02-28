@@ -1,16 +1,14 @@
-const PEOPLE_COUNT = 6
 const MIN_RATING = 1
 const MAX_RATING = 5
 
-const MIN_SCORE = PEOPLE_COUNT * MIN_RATING
-const MAX_SCORE = PEOPLE_COUNT * MAX_RATING
-
-export const SCORE_CONFIG = {
-  min: MIN_SCORE,
-  max: MAX_SCORE,
-  peopleCount: PEOPLE_COUNT,
-  minRating: MIN_RATING,
-  maxRating: MAX_RATING,
+export function getScoreConfig(peopleCount: number) {
+  return {
+    min: peopleCount * MIN_RATING,
+    max: peopleCount * MAX_RATING,
+    peopleCount,
+    minRating: MIN_RATING,
+    maxRating: MAX_RATING,
+  }
 }
 
 interface ScoreInterval {
@@ -19,22 +17,25 @@ interface ScoreInterval {
 }
 
 export function calculateScoreIntervals(
-  categoriesCount: number
+  categoriesCount: number,
+  peopleCount: number
 ): ScoreInterval[] {
   if (categoriesCount === 0) return []
 
-  const totalRange = MAX_SCORE - MIN_SCORE + 1
+  const minScore = peopleCount * MIN_RATING
+  const maxScore = peopleCount * MAX_RATING
+  const totalRange = maxScore - minScore + 1
   const pointsPerCategory = totalRange / categoriesCount
 
   const intervals: ScoreInterval[] = []
 
   for (let i = 0; i < categoriesCount; i++) {
     const max =
-      i === 0 ? MAX_SCORE : Math.floor(MAX_SCORE - pointsPerCategory * i)
+      i === 0 ? maxScore : Math.floor(maxScore - pointsPerCategory * i)
     const min =
       i === categoriesCount - 1
-        ? MIN_SCORE
-        : Math.ceil(MAX_SCORE - pointsPerCategory * (i + 1) + 1)
+        ? minScore
+        : Math.ceil(maxScore - pointsPerCategory * (i + 1) + 1)
 
     intervals.push({ min, max })
   }
@@ -44,9 +45,10 @@ export function calculateScoreIntervals(
 
 export function findCategoryIndexByScore(
   score: number,
-  categoriesCount: number
+  categoriesCount: number,
+  peopleCount: number
 ): number | null {
-  const intervals = calculateScoreIntervals(categoriesCount)
+  const intervals = calculateScoreIntervals(categoriesCount, peopleCount)
 
   const index = intervals.findIndex(
     (interval) => score >= interval.min && score <= interval.max
