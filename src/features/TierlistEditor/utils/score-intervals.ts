@@ -16,6 +16,15 @@ interface ScoreInterval {
   max: number
 }
 
+// Parabolic weights: center categories get more range, edges get less.
+// Formula: weight[i] = N - |2i - (N-1)|
+// Example for N=5: [1, 3, 5, 3, 1]
+function buildParabolicWeights(categoriesCount: number): number[] {
+  return Array.from({ length: categoriesCount }, (_, index) =>
+    categoriesCount - Math.abs(2 * index - (categoriesCount - 1))
+  )
+}
+
 export function calculateScoreIntervals(
   categoriesCount: number,
   peopleCount: number
@@ -25,22 +34,22 @@ export function calculateScoreIntervals(
   const minScore = peopleCount * MIN_RATING
   const maxScore = peopleCount * MAX_RATING
   const totalRange = maxScore - minScore + 1
-  const pointsPerCategory = totalRange / categoriesCount
 
-  const intervals: ScoreInterval[] = []
+  const weights = buildParabolicWeights(categoriesCount)
+  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0)
 
-  for (let i = 0; i < categoriesCount; i++) {
-    const max =
-      i === 0 ? maxScore : Math.floor(maxScore - pointsPerCategory * i)
-    const min =
-      i === categoriesCount - 1
-        ? minScore
-        : Math.ceil(maxScore - pointsPerCategory * (i + 1) + 1)
-
-    intervals.push({ min, max })
+  // Cumulative boundaries between categories, computed from the top
+  const boundaries: number[] = []
+  let cumWeight = 0
+  for (let i = 0; i < categoriesCount - 1; i++) {
+    cumWeight += weights[i]
+    boundaries.push(maxScore - Math.round((totalRange * cumWeight) / totalWeight))
   }
 
-  return intervals
+  return Array.from({ length: categoriesCount }, (_, i) => ({
+    max: i === 0 ? maxScore : boundaries[i - 1],
+    min: i === categoriesCount - 1 ? minScore : boundaries[i] + 1,
+  }))
 }
 
 export function findCategoryIndexByScore(
