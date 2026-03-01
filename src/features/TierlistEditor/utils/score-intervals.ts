@@ -1,5 +1,6 @@
 const MIN_RATING = 1
 const MAX_RATING = 5
+const MID_RATING = (MIN_RATING + MAX_RATING) / 2
 
 export function getScoreConfig(peopleCount: number) {
   return {
@@ -16,15 +17,8 @@ interface ScoreInterval {
   max: number
 }
 
-// Parabolic weights: center categories get more range, edges get less.
-// Formula: weight[i] = N - |2i - (N-1)|
-// Example for N=5: [1, 3, 5, 3, 1]
-function buildParabolicWeights(categoriesCount: number): number[] {
-  return Array.from({ length: categoriesCount }, (_, index) =>
-    categoriesCount - Math.abs(2 * index - (categoriesCount - 1))
-  )
-}
-
+// bucketSize = peopleCount ensures "all vote 3" lands in the center of the middle bucket.
+// Edge buckets are naturally clipped to [minScore, maxScore].
 export function calculateScoreIntervals(
   categoriesCount: number,
   peopleCount: number
@@ -33,23 +27,23 @@ export function calculateScoreIntervals(
 
   const minScore = peopleCount * MIN_RATING
   const maxScore = peopleCount * MAX_RATING
-  const totalRange = maxScore - minScore + 1
+  const bucketSize = peopleCount
+  const averageScore = peopleCount * MID_RATING
+  const middleIndex = (categoriesCount - 1) / 2
+  const offset = Math.round(
+    averageScore - middleIndex * bucketSize - (bucketSize - 1) / 2
+  )
 
-  const weights = buildParabolicWeights(categoriesCount)
-  const totalWeight = weights.reduce((sum, weight) => sum + weight, 0)
+  return Array.from({ length: categoriesCount }, (_, i) => {
+    const bucketFromBottom = categoriesCount - 1 - i
+    const theoreticalMin = offset + bucketFromBottom * bucketSize
+    const theoreticalMax = offset + (bucketFromBottom + 1) * bucketSize - 1
 
-  // Cumulative boundaries between categories, computed from the top
-  const boundaries: number[] = []
-  let cumWeight = 0
-  for (let i = 0; i < categoriesCount - 1; i++) {
-    cumWeight += weights[i]
-    boundaries.push(maxScore - Math.round((totalRange * cumWeight) / totalWeight))
-  }
-
-  return Array.from({ length: categoriesCount }, (_, i) => ({
-    max: i === 0 ? maxScore : boundaries[i - 1],
-    min: i === categoriesCount - 1 ? minScore : boundaries[i] + 1,
-  }))
+    return {
+      min: Math.max(theoreticalMin, minScore),
+      max: Math.min(theoreticalMax, maxScore),
+    }
+  })
 }
 
 export function findCategoryIndexByScore(
