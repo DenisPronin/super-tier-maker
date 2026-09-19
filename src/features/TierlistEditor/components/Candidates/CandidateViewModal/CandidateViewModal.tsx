@@ -193,7 +193,7 @@ export function CandidateViewModal({
             <Text size="1.75rem" fw={700}>
               {candidate.title}
             </Text>
-            <Text size="md">
+            <Text size="md" c="gray.4">
               {candidate.comment && `${candidate.comment}`}
               {/*{candidate.year}*/}
             </Text>
