@@ -1,12 +1,18 @@
-import { Stack, Text, Textarea, TextInput } from '@mantine/core'
+import { Select, Stack, Text, Textarea, TextInput } from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { type ReactNode, useEffect, useState } from 'react'
 import { validateTitle } from '../../Tierlist.model'
+import type { HeaderThemeId } from '../../themes/HeaderTheme.types'
+import {
+  DEFAULT_HEADER_THEME_ID,
+  HEADER_THEME_OPTIONS,
+} from '../../themes/HeaderThemes'
 import { TierlistPreviewUpload } from '../TierlistPreviewUpload/TierlistPreviewUpload'
 
-interface TierlistMetaFormValues {
+export interface TierlistMetaFormValues {
   title: string
   description: string
+  theme: HeaderThemeId
 }
 
 interface TierlistMetaFormProps {
@@ -37,6 +43,7 @@ export function TierlistMetaForm({
     initialValues: {
       title: initialValues?.title || '',
       description: initialValues?.description || '',
+      theme: initialValues?.theme || DEFAULT_HEADER_THEME_ID,
     },
     validate: {
       title: validateTitle,
@@ -48,6 +55,7 @@ export function TierlistMetaForm({
       form.setValues({
         title: initialValues.title || '',
         description: initialValues.description || '',
+        theme: initialValues.theme || DEFAULT_HEADER_THEME_ID,
       })
     }
   }, [initialValues])
@@ -71,6 +79,13 @@ export function TierlistMetaForm({
           placeholder="Enter description (optional)"
           minRows={3}
           {...form.getInputProps('description')}
+        />
+
+        <Select
+          label="Header theme"
+          data={HEADER_THEME_OPTIONS}
+          allowDeselect={false}
+          {...form.getInputProps('theme')}
         />
 
         <TierlistPreviewUpload

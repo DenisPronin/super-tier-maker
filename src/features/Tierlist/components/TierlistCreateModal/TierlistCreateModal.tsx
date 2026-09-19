@@ -7,7 +7,10 @@ import {
   selectIsCreateModalOpen,
   useTierlistStore,
 } from '../../store/Tierlist.store'
-import { TierlistMetaForm } from '../TierlistMetaForm/TierlistMetaForm'
+import {
+  TierlistMetaForm,
+  type TierlistMetaFormValues,
+} from '../TierlistMetaForm/TierlistMetaForm'
 
 export function TierlistCreateModal() {
   const navigate = useNavigate()
@@ -26,7 +29,7 @@ export function TierlistCreateModal() {
   })
 
   const handleSubmit = async (
-    values: { title: string; description: string },
+    values: TierlistMetaFormValues,
     previewFile: File | null
   ) => {
     if (!user) return
@@ -40,6 +43,7 @@ export function TierlistCreateModal() {
         request: {
           title: values.title,
           description: values.description,
+          theme: values.theme,
           is_public: publicForm.values.is_public,
         },
         previewFile: previewFile || undefined,

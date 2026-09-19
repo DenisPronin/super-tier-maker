@@ -4,7 +4,11 @@ import {
   createLoadableData,
   createStore,
 } from '@/features/Store'
-import type { TierList } from '@/features/Tierlist/Tierlist.types'
+import type {
+  TierList,
+  TierListMeta,
+  UpdateTierListMetaRequest,
+} from '@/features/Tierlist/Tierlist.types'
 import type { StateLoadableSlice } from '@/types'
 import {
   apiBulkCreateCandidates,
@@ -54,10 +58,7 @@ type TierlistEditorState = {
   loadEditor: (id: string) => Promise<void>
   fetchTierlist: () => Promise<void>
   fetchCategories: () => Promise<void>
-  updateMeta: (updates: {
-    title?: string
-    description?: string
-  }) => Promise<void>
+  updateMeta: (updates: UpdateTierListMetaRequest) => Promise<void>
 
   openMetaModal: () => void
   closeMetaModal: () => void
@@ -165,11 +166,26 @@ export const useTierlistEditorStore = createStore<TierlistEditorState>()(
       },
     }),
 
-    updateMeta: async (updates: { title?: string; description?: string }) => {
-      const { tierlistId } = get()
+    updateMeta: async (updates: UpdateTierListMetaRequest) => {
+      const { tierlistId, tierlist } = get()
       if (!tierlistId) throw new Error('No tierlist loaded')
 
-      const updatedTierlist = await apiUpdateTierlistMeta(tierlistId, updates)
+      // The meta column is replaced as a whole, so merge to keep keys this update does not touch.
+      const meta: TierListMeta = { ...(tierlist.data?.meta ?? {}) }
+      if (updates.description !== undefined) {
+        meta.description = updates.description
+      }
+      if (updates.theme !== undefined) {
+        meta.theme = updates.theme
+      }
+
+      const hasMetaChanges =
+        updates.description !== undefined || updates.theme !== undefined
+
+      const updatedTierlist = await apiUpdateTierlistMeta(tierlistId, {
+        title: updates.title,
+        meta: hasMetaChanges ? meta : undefined,
+      })
       set({
         tierlist: {
           ...get().tierlist,
