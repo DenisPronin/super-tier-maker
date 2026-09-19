@@ -14,6 +14,7 @@ import {
   apiBulkCreateCandidates,
   apiCreateCandidate,
   apiCreateCategory,
+  apiDeleteAllCandidates,
   apiDeleteCandidate,
   apiDeleteCategory,
   apiFetchCandidates,
@@ -79,6 +80,7 @@ type TierlistEditorState = {
     updates: UpdateCandidateRequest
   ) => Promise<void>
   deleteCandidate: (id: string) => Promise<void>
+  clearCandidates: () => Promise<void>
   updatePlacement: (
     candidateId: string,
     categoryId: string | null,
@@ -367,6 +369,22 @@ export const useTierlistEditorStore = createStore<TierlistEditorState>()(
       const currentPlacements = new Map(get().placements)
       currentPlacements.delete(id)
       set({ placements: currentPlacements })
+    },
+
+    clearCandidates: async () => {
+      const { tierlistId } = get()
+      if (!tierlistId) throw new Error('No tierlist loaded')
+
+      await apiDeleteAllCandidates(tierlistId)
+
+      // Placements are removed by the database cascade, so drop them locally too.
+      set({
+        candidates: {
+          ...get().candidates,
+          data: [],
+        },
+        placements: new Map<string, Placement>(),
+      })
     },
 
     updatePlacement: async (

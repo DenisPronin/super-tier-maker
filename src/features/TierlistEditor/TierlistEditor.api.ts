@@ -190,6 +190,17 @@ export async function apiDeleteCandidate(candidateId: string): Promise<void> {
   if (error) throw new Error(error.message)
 }
 
+export async function apiDeleteAllCandidates(
+  tierlistId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('tierlist_candidates')
+    .delete()
+    .eq('tierlist_id', tierlistId)
+
+  if (error) throw new Error(error.message)
+}
+
 export async function apiUpdatePlacement(
   tierlistId: string,
   candidateId: string,

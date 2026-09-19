@@ -28,6 +28,9 @@ import {
   getScoreConfig,
 } from '../../../utils/score-intervals'
 
+const POSTER_WIDTH = 300
+const POSTER_HEIGHT = 420
+
 interface CandidateViewModalProps {
   viewMode?: boolean
 }
@@ -186,16 +189,18 @@ export function CandidateViewModal({
         opened={isOpen}
         onClose={closeViewModal}
         title={
-          <Stack gap={0}>
-            <Text>{candidate.title}</Text>
-            <Text size="xs" c="dimmed">
+          <Stack gap={2}>
+            <Text size="xl" fw={600}>
+              {candidate.title}
+            </Text>
+            <Text size="sm" c="dimmed">
               {candidate.comment && `${candidate.comment}`}
               {/*{candidate.year}*/}
             </Text>
           </Stack>
         }
         centered
-        size="700px"
+        size="800px"
       >
         <Flex gap="md">
           <Box style={{ flexShrink: 0, position: 'relative' }}>
@@ -203,15 +208,15 @@ export function CandidateViewModal({
               <Image
                 src={candidate.preview_url}
                 alt={candidate.title}
-                maw={300}
+                w={POSTER_WIDTH}
                 fit="cover"
                 radius="md"
               />
             ) : (
               <div
                 style={{
-                  width: 120,
-                  height: 160,
+                  width: POSTER_WIDTH,
+                  height: POSTER_HEIGHT,
                   backgroundColor: '#e9ecef',
                   borderRadius: 8,
                 }}
@@ -220,7 +225,7 @@ export function CandidateViewModal({
 
             {candidate.url && (
               <ActionIcon
-                size="lg"
+                size="xl"
                 variant="filled"
                 color="dark"
                 style={{
@@ -231,7 +236,7 @@ export function CandidateViewModal({
                 }}
                 onClick={handlePlayClick}
               >
-                <IconPlayerPlay size={20} />
+                <IconPlayerPlay size={24} />
               </ActionIcon>
             )}
           </Box>
