@@ -23,6 +23,7 @@ import {
   selectViewingCandidateId,
   useTierlistEditorStore,
 } from '../../../store/TierlistEditor.store'
+import { getCategoryBackground } from '../../../utils/category-color'
 import {
   findCategoryIndexByScore,
   getScoreConfig,
@@ -97,7 +98,7 @@ export function CandidateViewModal({
           style={{
             width: 12,
             height: 12,
-            backgroundColor: category?.color || '#e9ecef',
+            background: getCategoryBackground(category?.color, '#e9ecef'),
             borderRadius: 2,
           }}
         />
@@ -261,7 +262,10 @@ export function CandidateViewModal({
                     style={{
                       width: 12,
                       height: 12,
-                      backgroundColor: selectedCategoryData.color || '#e9ecef',
+                      background: getCategoryBackground(
+                        selectedCategoryData.color,
+                        '#e9ecef'
+                      ),
                       borderRadius: 2,
                     }}
                   />

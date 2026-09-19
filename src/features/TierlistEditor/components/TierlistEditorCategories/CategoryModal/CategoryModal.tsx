@@ -1,4 +1,13 @@
-import { Button, ColorPicker, Modal, Stack, Text, TextInput } from '@mantine/core'
+import {
+  Box,
+  Button,
+  ColorPicker,
+  Modal,
+  Stack,
+  Switch,
+  Text,
+  TextInput,
+} from '@mantine/core'
 import { useForm } from '@mantine/form'
 import { useEffect, useState } from 'react'
 import {
@@ -7,10 +16,16 @@ import {
   selectIsCategoryModalOpen,
   useTierlistEditorStore,
 } from '../../../store/TierlistEditor.store'
+import {
+  isRainbowColor,
+  RAINBOW_COLOR,
+  RAINBOW_GRADIENT,
+} from '../../../utils/category-color'
 
 interface CategoryFormValues {
   title: string
   color: string
+  rainbow: boolean
 }
 
 const DEFAULT_COLORS = [
@@ -46,10 +61,12 @@ export function CategoryModal() {
     initialValues: {
       title: '',
       color: DEFAULT_COLORS[0],
+      rainbow: false,
     },
     validate: {
       title: (value) => (value.trim() ? null : 'Title is required'),
-      color: (value) => {
+      color: (value, values) => {
+        if (values.rainbow) return null
         const hexRegex = /^#[0-9A-Fa-f]{6}$/
         return hexRegex.test(value) ? null : 'Invalid hex color (e.g. #ff0000)'
       },
@@ -59,9 +76,13 @@ export function CategoryModal() {
   useEffect(() => {
     if (isOpen) {
       if (editingCategory) {
+        const rainbow = isRainbowColor(editingCategory.color)
         form.setValues({
           title: editingCategory.title,
-          color: editingCategory.color || DEFAULT_COLORS[0],
+          color: rainbow
+            ? DEFAULT_COLORS[0]
+            : editingCategory.color || DEFAULT_COLORS[0],
+          rainbow,
         })
       } else {
         form.reset()
@@ -78,7 +99,7 @@ export function CategoryModal() {
     try {
       const request = {
         title: values.title,
-        color: values.color,
+        color: values.rainbow ? RAINBOW_COLOR : values.color,
       }
 
       if (isEditMode && editingCategoryId) {
@@ -116,20 +137,32 @@ export function CategoryModal() {
             {...form.getInputProps('title')}
           />
 
-          <div>
-            <TextInput
-              label="Color"
-              placeholder="#ff0000"
-              {...form.getInputProps('color')}
+          <Switch
+            label="Rainbow"
+            {...form.getInputProps('rainbow', { type: 'checkbox' })}
+          />
+
+          {form.values.rainbow ? (
+            <Box
+              h={24}
+              style={{ background: RAINBOW_GRADIENT, borderRadius: 4 }}
             />
-            <ColorPicker
-              format="hex"
-              swatches={DEFAULT_COLORS}
-              {...form.getInputProps('color')}
-              mt="xs"
-              fullWidth
-            />
-          </div>
+          ) : (
+            <div>
+              <TextInput
+                label="Color"
+                placeholder="#ff0000"
+                {...form.getInputProps('color')}
+              />
+              <ColorPicker
+                format="hex"
+                swatches={DEFAULT_COLORS}
+                {...form.getInputProps('color')}
+                mt="xs"
+                fullWidth
+              />
+            </div>
+          )}
 
           {error && (
             <Text c="red" size="sm">
