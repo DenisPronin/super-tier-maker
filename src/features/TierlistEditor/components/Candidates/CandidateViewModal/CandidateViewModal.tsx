@@ -28,8 +28,8 @@ import {
   getScoreConfig,
 } from '../../../utils/score-intervals'
 
-const POSTER_WIDTH = 300
-const POSTER_HEIGHT = 420
+const POSTER_WIDTH = 360
+const POSTER_HEIGHT = 506
 
 interface CandidateViewModalProps {
   viewMode?: boolean
@@ -190,17 +190,17 @@ export function CandidateViewModal({
         onClose={closeViewModal}
         title={
           <Stack gap={2}>
-            <Text size="xl" fw={600}>
+            <Text size="1.75rem" fw={700}>
               {candidate.title}
             </Text>
-            <Text size="sm" c="dimmed">
+            <Text size="md">
               {candidate.comment && `${candidate.comment}`}
               {/*{candidate.year}*/}
             </Text>
           </Stack>
         }
         centered
-        size="800px"
+        size="880px"
       >
         <Flex gap="md">
           <Box style={{ flexShrink: 0, position: 'relative' }}>
