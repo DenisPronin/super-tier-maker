@@ -1,5 +1,5 @@
 import { supabase } from '@/app/imports/App.services'
-import type { TierList } from '@/features/Tierlist/Tierlist.types'
+import type { TierList, TierListMeta } from '@/features/Tierlist/Tierlist.types'
 import type {
   Candidate,
   Category,
@@ -38,7 +38,7 @@ export async function apiFetchCategories(
 
 export async function apiUpdateTierlistMeta(
   tierlistId: string,
-  updates: { title?: string; description?: string }
+  updates: { title?: string; meta?: TierListMeta }
 ): Promise<TierList> {
   const updateData: Record<string, unknown> = {}
 
@@ -46,8 +46,8 @@ export async function apiUpdateTierlistMeta(
     updateData.title = updates.title
   }
 
-  if (updates.description !== undefined) {
-    updateData.meta = { description: updates.description }
+  if (updates.meta !== undefined) {
+    updateData.meta = updates.meta
   }
 
   const { data, error } = await supabase
@@ -186,6 +186,17 @@ export async function apiDeleteCandidate(candidateId: string): Promise<void> {
     .from('tierlist_candidates')
     .delete()
     .eq('id', candidateId)
+
+  if (error) throw new Error(error.message)
+}
+
+export async function apiDeleteAllCandidates(
+  tierlistId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('tierlist_candidates')
+    .delete()
+    .eq('tierlist_id', tierlistId)
 
   if (error) throw new Error(error.message)
 }

@@ -11,3 +11,72 @@
   font-weight: normal;
   font-style: normal;
 }
+
+@font-face {
+  font-family: 'Waltograph';
+  src: url('/waltograph-2.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.play-header-strip {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.play-header-strip[data-marquee='true'] {
+  flex: 1 1 0;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 12%,
+    #000 88%,
+    transparent
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 12%,
+    #000 88%,
+    transparent
+  );
+}
+
+.play-header-strip__track {
+  display: flex;
+  width: max-content;
+}
+
+.play-header-strip__copy {
+  display: flex;
+  gap: var(--mantine-spacing-sm);
+}
+
+/* Trailing gap keeps spacing even at the seam between the two copies. */
+.play-header-strip[data-marquee='true'] .play-header-strip__copy {
+  padding-right: var(--mantine-spacing-sm);
+}
+
+.play-header-strip[data-marquee='true'] .play-header-strip__track {
+  animation: play-header-marquee var(--marquee-duration) linear infinite;
+}
+
+.play-header-strip[data-direction='right'] .play-header-strip__track {
+  animation-direction: reverse;
+}
+
+@keyframes play-header-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .play-header-strip__track {
+    animation: none;
+  }
+}

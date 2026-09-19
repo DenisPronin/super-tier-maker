@@ -23,6 +23,7 @@ import {
 } from '../../../store/TierlistEditor.store'
 import type { Candidate } from '../../../TierlistEditor.types'
 import { UNPLACED_CONTAINER_ID } from '../../../utils/dnd.helpers'
+import { CandidatesClearControl } from '../CandidatesClearControl/CandidatesClearControl'
 import { SortableCandidateCard } from '../SortableCandidateCard/SortableCandidateCard'
 
 interface UnplacedCandidatesListProps {
@@ -46,16 +47,12 @@ export function UnplacedCandidatesList({
     (state) => state.openBulkImportModal
   )
 
-  const {
-    sortedCandidates,
-    sortBy,
-    handleSortChange,
-    handleRegenerateRandom,
-  } = usePlayModeCandidateSort({
-    candidates: unplacedCandidates,
-    tierlistId,
-    enabled: viewMode,
-  })
+  const { sortedCandidates, sortBy, handleSortChange, handleRegenerateRandom } =
+    usePlayModeCandidateSort({
+      candidates: unplacedCandidates,
+      tierlistId,
+      enabled: viewMode,
+    })
 
   const displayCandidates = viewMode ? sortedCandidates : unplacedCandidates
 
@@ -108,6 +105,8 @@ export function UnplacedCandidatesList({
 
         {!viewMode && (
           <Group gap="xs">
+            <CandidatesClearControl />
+
             <Button
               leftSection={<IconFileImport size={18} />}
               onClick={() => openBulkImportModal()}

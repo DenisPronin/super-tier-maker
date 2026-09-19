@@ -1,4 +1,5 @@
 import { TierlistMetaForm } from '@/app/imports/App.components'
+import type { TierlistMetaFormValues } from '@/features/Tierlist/components/TierlistMetaForm/TierlistMetaForm'
 import { apiUpdateTierListPreview } from '@/features/Tierlist/Tierlist.api'
 import { Button, Modal, Stack } from '@mantine/core'
 import { useCallback, useState } from 'react'
@@ -36,10 +37,7 @@ export function TierlistMetaModal() {
   }, [closeModal])
 
   const handleSubmit = useCallback(
-    async (
-      values: { title: string; description: string },
-      previewFile: File | null
-    ) => {
+    async (values: TierlistMetaFormValues, previewFile: File | null) => {
       if (!tierlist.data) return
 
       setIsLoading(true)
@@ -49,6 +47,7 @@ export function TierlistMetaModal() {
         await updateMeta({
           title: values.title,
           description: values.description,
+          theme: values.theme,
         })
 
         if (previewFile) {
@@ -83,6 +82,7 @@ export function TierlistMetaModal() {
         initialValues={{
           title: tierlist.data.title,
           description: tierlist.data.meta.description || '',
+          theme: tierlist.data.meta.theme,
         }}
         currentPreviewUrl={previewUrl}
         tierlistId={tierlist.data.id}

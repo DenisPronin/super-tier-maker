@@ -1,3 +1,5 @@
+import type { HeaderThemeId } from './themes/HeaderTheme.types'
+
 export interface TierList {
   id: string
   owner_id: string
@@ -12,10 +14,18 @@ export interface TierList {
 
 export interface TierListMeta {
   description?: string
+  theme?: HeaderThemeId
 }
 
 export interface CreateTierListRequest {
   title: string
   description: string
+  theme: HeaderThemeId
   is_public: boolean
+}
+
+export interface UpdateTierListMetaRequest {
+  title?: string
+  description?: string
+  theme?: HeaderThemeId
 }

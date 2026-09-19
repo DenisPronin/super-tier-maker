@@ -24,7 +24,7 @@ export async function apiCreateTierList(
     .insert({
       owner_id: userId,
       title: request.title,
-      meta: { description: request.description },
+      meta: { description: request.description, theme: request.theme },
       is_public: request.is_public,
     })
     .select()
